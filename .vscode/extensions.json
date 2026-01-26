@@ -1,0 +1,32 @@
+{
+  "recommendations": [
+    {
+      "id": "ms-vscode.vscode-typescript-next",
+      "reason": "TypeScript language support"
+    },
+    {
+      "id": "dbaeumer.vscode-eslint",
+      "reason": "ESLint integration"
+    },
+    {
+      "id": "esbenp.prettier-vscode",
+      "reason": "Code formatting"
+    },
+    {
+      "id": "orta.vscode-jest",
+      "reason": "Jest test runner integration"
+    },
+    {
+      "id": "ms-azuretools.vscode-docker",
+      "reason": "Docker support"
+    },
+    {
+      "id": "redhat.vscode-yaml",
+      "reason": "YAML validation (for workflows)"
+    },
+    {
+      "id": "GitHub.vscode-pull-request-github",
+      "reason": "GitHub integration"
+    }
+  ]
+}

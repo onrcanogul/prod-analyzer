@@ -1,0 +1,41 @@
+# Development files
+src/
+test-fixtures/
+*.test.ts
+*.spec.ts
+coverage/
+.nyc_output/
+
+# Build configuration
+tsconfig.json
+jest.config.js
+.eslintrc.js
+.prettierrc
+
+# Documentation (keep README.md)
+QUICKSTART.md
+ARCHITECTURE.md
+CI_INTEGRATION.md
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+.DS_Store
+*.log
+npm-debug.log*
+.env
+hooks/

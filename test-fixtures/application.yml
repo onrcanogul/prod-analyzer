@@ -1,0 +1,27 @@
+# Sample Spring Boot configuration with intentional misconfigurations
+# This file is used to test the secure-guard scanner
+
+spring:
+  profiles:
+    active: dev  # This should trigger a HIGH severity violation
+  jpa:
+    hibernate:
+      ddl-auto: update  # This should trigger a HIGH severity violation
+    show-sql: true
+
+logging:
+  level:
+    root: DEBUG  # This should trigger a HIGH severity violation
+    org.springframework: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"  # This should trigger a HIGH severity violation
+  endpoint:
+    health:
+      show-details: always  # This should trigger a MEDIUM severity violation
+
+server:
+  port: 8080

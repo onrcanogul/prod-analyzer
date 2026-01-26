@@ -1,0 +1,1 @@
+{"version":3,"file":"actuator-endpoints-exposed.rule.d.ts","sourceRoot":"","sources":["../../../../../src/domain/rules/implementations/spring-boot/actuator-endpoints-exposed.rule.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;;;;;;;;;GAkBG;AAIH,OAAO,EAAE,IAAI,EAAE,MAAM,sBAAsB,CAAC;AAc5C;;;;GAIG;AACH,eAAO,MAAM,4BAA4B,EAAE,IA2C1C,CAAC"}
