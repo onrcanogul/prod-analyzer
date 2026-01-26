@@ -21,7 +21,7 @@
  * 6. Full Details (verbose mode only)
  */
 
-import { ScanResult, groupViolations, getTopBlockers, Severity, hasViolationsAboveThreshold } from '../../domain';
+import { ScanResult, groupViolations, Severity, hasViolationsAboveThreshold } from '../../domain';
 import { ScanOptions } from '../../application/models/scan-options';
 
 // ANSI color codes
@@ -102,11 +102,12 @@ export function formatEnhancedConsoleReport(
   
   // Group violations
   const grouped = groupViolations(result.violations);
-  const blockers = getTopBlockers(grouped, options.failOnSeverity, 5);
+  const blockers = grouped.filter(g => g.severityLevel >= options.failOnSeverity);
+  const nonBlockers = grouped.filter(g => g.severityLevel < options.failOnSeverity);
   
-  // 4. Top Blockers
+  // 4. Blocking Violations (at or above threshold)
   if (blockers.length > 0) {
-    lines.push(`${colors.bold}${colors.red}Top Blockers (${blockers.length}):${colors.reset}`);
+    lines.push(`${colors.bold}${colors.red}Blocking Violations (${blockers.length} rules, ${blockers.reduce((sum, g) => sum + g.count, 0)} total):${colors.reset}`);
     lines.push('');
     
     for (const group of blockers) {
@@ -115,19 +116,11 @@ export function formatEnhancedConsoleReport(
       
       lines.push(`${colors.bold}${severityColor}[${severityName}] ${group.ruleId}${colors.reset} ${colors.dim}(${group.count} occurrence${group.count > 1 ? 's' : ''})${colors.reset}`);
       
-      // Show first 3 occurrences
-      const displayCount = Math.min(3, group.occurrences.length);
-      for (let i = 0; i < displayCount; i++) {
-        const occ = group.occurrences[i];
-        if (!occ) continue;
-        
+      // Show ALL occurrences (not just first 3)
+      for (const occ of group.occurrences) {
         const lineInfo = occ.lineNumber ? `:${occ.lineNumber}` : '';
         lines.push(`  ${colors.dim}→${colors.reset} ${occ.filePath}${lineInfo}`);
         lines.push(`    ${occ.configKey} = ${occ.configValue}`);
-      }
-      
-      if (group.count > displayCount) {
-        lines.push(`  ${colors.dim}... and ${group.count - displayCount} more${colors.reset}`);
       }
       
       // Show message and fix from first occurrence
@@ -141,52 +134,33 @@ export function formatEnhancedConsoleReport(
     }
   }
   
-  // 5. Other Findings
-  const nonBlockers = grouped.filter(g => g.severityLevel < options.failOnSeverity);
+  // 5. Non-Blocking Violations (below threshold)
   if (nonBlockers.length > 0) {
-    lines.push(`${colors.bold}Other Findings:${colors.reset}`);
+    lines.push(`${colors.bold}${colors.yellow}Non-Blocking Violations (${nonBlockers.length} rules, ${nonBlockers.reduce((sum, g) => sum + g.count, 0)} total):${colors.reset}`);
+    lines.push('');
     
-    // Count by severity
-    const counts: Record<string, number> = {};
     for (const group of nonBlockers) {
-      const severityName = Severity[group.severity];
-      counts[severityName] = (counts[severityName] ?? 0) + group.count;
-    }
-    
-    for (const [severityName, count] of Object.entries(counts)) {
-      lines.push(`  ${severityName}: ${count}`);
-    }
-    
-    lines.push('');
-  }
-  
-  // 6. Verbose Details
-  if (options.verbose) {
-    lines.push(`${colors.bold}Full Details:${colors.reset}`);
-    lines.push('');
-    
-    let counter = 1;
-    for (const group of grouped) {
       const severityColor = getSeverityColor(group.severity);
       const severityName = Severity[group.severity];
       
+      lines.push(`${colors.bold}${severityColor}[${severityName}] ${group.ruleId}${colors.reset} ${colors.dim}(${group.count} occurrence${group.count > 1 ? 's' : ''})${colors.reset}`);
+      
+      // Show ALL occurrences
       for (const occ of group.occurrences) {
-        lines.push(`${counter}. ${colors.bold}${severityColor}[${severityName}] ${group.ruleId}${colors.reset}`);
-        
         const lineInfo = occ.lineNumber ? `:${occ.lineNumber}` : '';
-        lines.push(`   ${colors.dim}File:${colors.reset}   ${occ.filePath}${lineInfo}`);
-        lines.push(`   ${colors.dim}Key:${colors.reset}    ${occ.configKey}`);
-        lines.push(`   ${colors.dim}Value:${colors.reset}  ${occ.configValue}`);
-        lines.push(`   ${colors.dim}Issue:${colors.reset}  ${occ.message}`);
-        lines.push(`   ${colors.dim}Fix:${colors.reset}    ${occ.suggestion}`);
-        lines.push('');
-        
-        counter++;
+        lines.push(`  ${colors.dim}→${colors.reset} ${occ.filePath}${lineInfo}`);
+        lines.push(`    ${occ.configKey} = ${occ.configValue}`);
       }
+      
+      // Show message and fix from first occurrence
+      const first = group.occurrences[0];
+      if (first) {
+        lines.push(`  ${colors.dim}Issue:${colors.reset} ${first.message}`);
+        lines.push(`  ${colors.dim}Fix:${colors.reset}   ${first.suggestion}`);
+      }
+      
+      lines.push('');
     }
-  } else {
-    lines.push(`${colors.dim}Run with --verbose (-v) to see full violation details${colors.reset}`);
-    lines.push('');
   }
   
   // Footer

@@ -15,10 +15,12 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
     "clean": "rm -rf dist",
-    "scan": "node dist/cli/main.js scan",
-    "scan:ci": "node dist/cli/main.js scan --format sarif",
-    "scan:json": "node dist/cli/main.js scan --format json",
-    "scan:all": "node dist/cli/main.js scan --profile all",
+    "demo": "npm run build && node dist/cli/main.js scan -d test-fixtures",
+    "demo-verbose": "npm run build && node dist/cli/main.js scan -d test-fixtures --verbose",
+    "scan": "npm run build && node dist/cli/main.js scan",
+    "scan:ci": "npm run build && node dist/cli/main.js scan --format sarif",
+    "scan:json": "npm run build && node dist/cli/main.js scan --format json",
+    "scan:all": "npm run build && node dist/cli/main.js scan --profile all",
     "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
