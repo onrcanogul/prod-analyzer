@@ -1,44 +1,45 @@
-# Secure Guard
+# prod-analyzer
 
-[![CI/CD](https://github.com/your-org/secure-guard/workflows/CI/badge.svg)](https://github.com/your-org/secure-guard/actions)
+[![npm version](https://img.shields.io/npm/v/prod-analyzer.svg)](https://www.npmjs.com/package/prod-analyzer)
+[![CI/CD](https://github.com/onrcanogul/prod-analyzer/workflows/CI/badge.svg)](https://github.com/onrcanogul/prod-analyzer/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Docker](https://img.shields.io/badge/docker-available-blue.svg)](https://github.com/your-org/secure-guard/pkgs/container/secure-guard)
+[![Docker](https://img.shields.io/badge/docker-available-blue.svg)](https://github.com/onrcanogul/prod-analyzer/pkgs/container/prod-analyzer)
 
 A production-quality CLI tool for detecting security misconfigurations across **Spring Boot**, **Node.js**, and **.NET** applications.
 
-## 🎯 Overview
+## Overview
 
-Secure Guard is a **fail-fast CI gate tool** designed to prevent misconfigured applications from being deployed to production. It scans your configuration files and detects security issues **before** they reach production.
+prod-analyzer is a **fail-fast CI gate tool** designed to prevent misconfigured applications from being deployed to production. It scans your configuration files and detects security issues **before** they reach production.
 
 **Key Features:**
-- ✅ **Multi-Platform Support** - Spring Boot, Node.js, .NET
-- ✅ **CI/CD Ready** - SARIF output, GitHub/GitLab integration
-- ✅ **Profile-Based Scanning** - Only run relevant rules
-- ✅ **Grouped Violations** - Reduced noise, actionable reports
-- ✅ **Docker Support** - Run anywhere
-- ✅ **Zero Configuration** - Works out of the box
+- **Multi-Platform Support** - Spring Boot, Node.js, .NET
+- **CI/CD Ready** - SARIF output, GitHub/GitLab integration
+- **Profile-Based Scanning** - Only run relevant rules
+- **19 Built-in Security Rules** - Comprehensive coverage
+- **Docker Support** - Run anywhere
+- **Zero Configuration** - Works out of the box
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### NPM (Recommended)
 
 ```bash
-npm install -g secure-guard
+npm install -g prod-analyzer
 ```
 
 ### Docker
 
 ```bash
-docker pull ghcr.io/your-org/secure-guard:latest
+docker pull ghcr.io/onrcanogul/prod-analyzer:latest
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/your-org/secure-guard.git
-cd secure-guard
+git clone https://github.com/onrcanogul/prod-analyzer.git
+cd prod-analyzer
 npm install
 npm run build
 npm link
@@ -46,32 +47,32 @@ npm link
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Basic Scan
 
 ```bash
 # Scan current directory (Spring Boot by default)
-secure-guard scan
+prod-analyzer scan
 
 # Scan specific directory with profile
-secure-guard scan -d ./backend --profile spring
+prod-analyzer scan -d ./backend --profile spring
 
 # Multi-platform scan
-secure-guard scan --profile all
+prod-analyzer scan --profile all
 ```
 
 ### CI/CD Integration
 
 ```bash
 # GitHub Actions - SARIF for Security tab
-secure-guard scan --format sarif > results.sarif
+prod-analyzer scan --format sarif > results.sarif
 
 # Console output with fail-on threshold
-secure-guard scan --fail-on HIGH
+prod-analyzer scan --fail-on HIGH
 
 # JSON for artifacts
-secure-guard scan --format json > security-report.json
+prod-analyzer scan --format json > security-report.json
 ```
 
 ### Docker Usage
@@ -79,13 +80,13 @@ secure-guard scan --format json > security-report.json
 ```bash
 # Scan with Docker
 docker run --rm -v $(pwd):/workspace \
-  ghcr.io/your-org/secure-guard:latest \
+  ghcr.io/onrcanogul/prod-analyzer:latest \
   scan -d /workspace --profile all
 ```
 
 ---
 
-## 📋 CLI Options
+## CLI Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
@@ -98,28 +99,28 @@ docker run --rm -v $(pwd):/workspace \
 
 ---
 
-## 🎯 Exit Codes
+## Exit Codes
 
 | Code | Meaning | CI Action |
 |------|---------|-----------|
-| **0** | ✅ Success (no violations above threshold) | Pipeline passes |
-| **1** | ❌ Violations found at or above threshold | Pipeline fails |
-| **2** | ⚠️ Invalid arguments | Pipeline fails |
-| **3** | 💥 Unexpected error | Pipeline fails |
+| **0** | Success (no violations above threshold) | Pipeline passes |
+| **1** | Violations found at or above threshold | Pipeline fails |
+| **2** | Invalid arguments | Pipeline fails |
+| **3** | Unexpected error | Pipeline fails |
 
 **Example:**
 ```bash
 # Exit code 1 if violations >= HIGH found
-secure-guard scan --fail-on HIGH || echo "Deployment blocked!"
+prod-analyzer scan --fail-on HIGH || echo "Deployment blocked!"
 ```
 
 ---
 
-## 🔐 Security Rules
+## Security Rules
 
-Secure Guard includes **12 built-in security rules** across 3 platforms:
+prod-analyzer includes **19 built-in security rules** across 3 platforms:
 
-### Spring Boot Rules (5)
+### Spring Boot Rules (7)
 
 #### 1. SPRING_PROFILE_DEV_ACTIVE (HIGH)
 Detects when development or test Spring profiles are active.
@@ -146,44 +147,79 @@ Detects unsafe Hibernate DDL auto configuration.
 - **Triggers:** `spring.jpa.hibernate.ddl-auto = create|create-drop|update`
 - **Why:** Can cause data loss or leave database in inconsistent state.
 
-### Node.js Rules (4)
+#### 6. CSRF_DISABLED (HIGH)
+Detects when CSRF protection is disabled.
+- **Triggers:** `security.csrf.enabled = false`
+- **Why:** Leaves application vulnerable to Cross-Site Request Forgery attacks.
 
-#### 6. NODE_ENV_NOT_PRODUCTION (HIGH)
+#### 7. EXPOSED_STACK_TRACE (MEDIUM)
+Detects when stack traces are exposed in error responses.
+- **Triggers:** `server.error.include-stacktrace = always`
+- **Why:** Reveals internal application structure and file paths.
+
+### Node.js Rules (7)
+
+#### 8. NODE_ENV_NOT_PRODUCTION (HIGH)
 Detects when NODE_ENV is not set to 'production'.
 - **Triggers:** `NODE_ENV != production|prod`
 - **Why:** Enables debug features and exposes detailed error stack traces.
 
-#### 7. NODEJS_DEBUG_ENABLED (MEDIUM)
+#### 9. NODEJS_DEBUG_ENABLED (MEDIUM)
 Detects when debug logging is enabled.
 - **Triggers:** `DEBUG = *` or `LOG_LEVEL = debug|trace`
 - **Why:** May expose sensitive application internals and performance data.
 
-#### 8. EXPOSED_SECRETS (CRITICAL)
+#### 10. EXPOSED_SECRETS (CRITICAL)
 Detects weak or placeholder secrets in environment variables.
 - **Triggers:** Short secrets (<8 chars) or common placeholders (test, changeme, admin)
 - **Why:** Weak secrets can be easily compromised, leading to unauthorized access.
 
-#### 9. CORS_WILDCARD_ORIGIN (HIGH)
+#### 11. CORS_WILDCARD_ORIGIN (HIGH)
 Detects CORS wildcard configuration.
 - **Triggers:** `CORS_ORIGIN = *`
 - **Why:** Allows any website to make requests to your API, enabling CSRF attacks.
 
-### .NET Rules (3)
+#### 12. HELMET_DISABLED (MEDIUM)
+Detects when Helmet security middleware is disabled.
+- **Triggers:** `HELMET_ENABLED = false`
+- **Why:** Missing security headers leave application vulnerable to various attacks.
 
-#### 10. ASPNETCORE_ENVIRONMENT_DEVELOPMENT (HIGH)
+#### 13. JWT_WEAK_SECRET (CRITICAL)
+Detects weak JWT secrets.
+- **Triggers:** Short JWT secrets (<32 chars) or common values
+- **Why:** Weak JWT secrets allow attackers to forge authentication tokens.
+
+#### 14. RATE_LIMIT_DISABLED (MEDIUM)
+Detects when rate limiting is disabled.
+- **Triggers:** `RATE_LIMIT_ENABLED = false`
+- **Why:** Missing rate limiting enables brute force and DoS attacks.
+
+### .NET Rules (5)
+
+#### 15. ASPNETCORE_ENVIRONMENT_DEVELOPMENT (HIGH)
 Detects Development environment in ASP.NET Core.
 - **Triggers:** `ASPNETCORE_ENVIRONMENT = Development|dev`
 - **Why:** Enables developer exception pages and detailed error messages.
 
-#### 11. DOTNET_DETAILED_ERRORS_ENABLED (HIGH/MEDIUM)
+#### 16. DOTNET_DETAILED_ERRORS_ENABLED (HIGH/MEDIUM)
 Detects detailed error messages enabled.
 - **Triggers:** `customErrors = Off` or `DetailedErrors = true` or `LogLevel = Debug|Trace`
 - **Why:** Exposes sensitive application internals including stack traces and file paths.
 
-#### 12. DOTNET_CONNECTION_STRING_EXPOSED (CRITICAL)
+#### 17. DOTNET_CONNECTION_STRING_EXPOSED (CRITICAL)
 Detects plain text connection strings.
 - **Triggers:** `ConnectionStrings` in configuration with passwords
 - **Why:** Critical security risk - exposes database credentials.
+
+#### 18. DEVELOPER_EXCEPTION_PAGE (HIGH)
+Detects when developer exception page is enabled.
+- **Triggers:** `DeveloperExceptionPage = true`
+- **Why:** Exposes detailed error information including stack traces.
+
+#### 19. REQUIRE_HTTPS_DISABLED (MEDIUM)
+Detects when HTTPS redirection is disabled.
+- **Triggers:** `RequireHttpsMetadata = false`
+- **Why:** Allows unencrypted traffic, enabling man-in-the-middle attacks.
 
 ## Architecture
 
@@ -249,9 +285,9 @@ export const myCustomRule: Rule = {
 };
 ```
 
-## 🔄 CI/CD Integration
+## CI/CD Integration
 
-Secure Guard is designed for seamless CI/CD integration. See **[CI_INTEGRATION.md](./CI_INTEGRATION.md)** for comprehensive guides.
+prod-analyzer is designed for seamless CI/CD integration. See **[CI_INTEGRATION.md](./CI_INTEGRATION.md)** for comprehensive guides.
 
 ### Quick Examples
 
@@ -259,7 +295,7 @@ Secure Guard is designed for seamless CI/CD integration. See **[CI_INTEGRATION.m
 
 ```yaml
 - name: Security Scan
-  run: npx secure-guard scan --format sarif > results.sarif
+  run: npx prod-analyzer scan --format sarif > results.sarif
   continue-on-error: true
 
 - name: Upload to Security Tab
@@ -273,7 +309,7 @@ Secure Guard is designed for seamless CI/CD integration. See **[CI_INTEGRATION.m
 ```yaml
 security-scan:
   script:
-    - npx secure-guard scan --fail-on HIGH
+    - npx prod-analyzer scan --fail-on HIGH
   artifacts:
     reports:
       sast: gl-sast-report.json
@@ -283,38 +319,38 @@ security-scan:
 
 ```bash
 docker run --rm -v $PWD:/workspace \
-  ghcr.io/your-org/secure-guard:latest \
+  ghcr.io/onrcanogul/prod-analyzer:latest \
   scan -d /workspace --profile all
 ```
 
-**📚 For complete CI/CD integration guides (GitHub, GitLab, Azure, Jenkins, CircleCI), pre-commit hooks, and best practices, see [CI_INTEGRATION.md](./CI_INTEGRATION.md).**
+**For complete CI/CD integration guides (GitHub, GitLab, Azure, Jenkins, CircleCI), pre-commit hooks, and best practices, see [CI_INTEGRATION.md](./CI_INTEGRATION.md).**
 
 ---
 
-## 🐳 Docker
+## Docker
 
 ### Build
 
 ```bash
-docker build -t secure-guard .
+docker build -t prod-analyzer .
 ```
 
 ### Run
 
 ```bash
 # Scan current directory
-docker run --rm -v $(pwd):/workspace secure-guard scan -d /workspace
+docker run --rm -v $(pwd):/workspace prod-analyzer scan -d /workspace
 
 # With JSON output
-docker run --rm -v $(pwd):/workspace secure-guard scan -d /workspace --format json
+docker run --rm -v $(pwd):/workspace prod-analyzer scan -d /workspace --format json
 
 # Specific profile
-docker run --rm -v $(pwd):/workspace secure-guard scan -d /workspace --profile spring
+docker run --rm -v $(pwd):/workspace prod-analyzer scan -d /workspace --profile spring
 ```
 
 ---
 
-## 🧪 Development
+## Development
 
 ```bash
 # Run tests

@@ -1,38 +1,50 @@
 {
-  "name": "secure-guard",
-  "version": "1.0.0",
-  "description": "Production-quality CLI tool for detecting Spring Boot configuration misconfigurations",
-  "main": "dist/index.js",
+  "name": "prod-analyzer",
+  "version": "0.1.0",
+  "description": "Fail-fast CI guard for dangerous production misconfigurations across Spring Boot, Node.js, and .NET",
+  "main": "dist/cli/main.js",
   "bin": {
-    "secure-guard": "./dist/cli/main.js"
+    "prod-analyzer": "dist/cli/main.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/cli/index.js",
-    "dev": "ts-node src/cli/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "demo": "npm run build && node dist/cli/main.js scan -d test-fixtures --profile spring --env prod",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.ts",
-    "clean": "rm -rf dist",
-    "demo": "npm run build && node dist/cli/main.js scan -d test-fixtures",
-    "demo-verbose": "npm run build && node dist/cli/main.js scan -d test-fixtures --verbose",
-    "scan": "npm run build && node dist/cli/main.js scan",
-    "scan:ci": "npm run build && node dist/cli/main.js scan --format sarif",
-    "scan:json": "npm run build && node dist/cli/main.js scan --format json",
-    "scan:all": "npm run build && node dist/cli/main.js scan --profile all",
-    "prepublishOnly": "npm run build && npm test"
+    "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "keywords": [
-    "spring-boot",
     "security",
+    "ci",
+    "cd",
     "configuration",
     "scanner",
-    "ci",
-    "devops"
+    "spring-boot",
+    "nodejs",
+    "dotnet",
+    "devops",
+    "production",
+    "sarif",
+    "github-actions",
+    "gitlab-ci"
   ],
-  "author": "",
+  "author": "onrcanogul",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/onrcanogul/prod-analyzer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/onrcanogul/prod-analyzer/issues"
+  },
+  "homepage": "https://github.com/onrcanogul/prod-analyzer#readme",
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/js-yaml": "^4.0.9",

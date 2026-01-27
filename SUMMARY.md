@@ -1,55 +1,77 @@
-# 🚀 Secure Guard - CI/CD-Ready Security Scanner
+# 🚀 prod-analyzer - CI/CD-Ready Security Scanner
+
+[![npm version](https://img.shields.io/npm/v/prod-analyzer.svg)](https://www.npmjs.com/package/prod-analyzer)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## ✅ What We Built
 
-A **production-ready, enterprise-grade security scanner** for configuration files with full CI/CD integration.
+A **production-ready, enterprise-grade security scanner** for configuration files with full CI/CD integration and NPM distribution.
 
 ### 🎯 Key Features
 
-#### 1. **Multi-Platform Support**
-- ✅ Spring Boot (5 rules)
-- ✅ Node.js (4 rules)
-- ✅ .NET (3 rules)
-- ✅ Profile-based scanning (--profile spring|node|dotnet|all)
+#### 1. **Multi-Platform Support (19 Rules)**
+- ✅ Spring Boot (7 rules) - profiles, Hibernate, logging, actuator, health, cookies, CSRF
+- ✅ Node.js (7 rules) - CORS, debug, secrets, helmet, JWT, NODE_ENV, rate-limit
+- ✅ .NET (5 rules) - environment, errors, connection strings, HTTPS, developer exceptions
+- ✅ Profile-based scanning (`--profile spring|node|dotnet|all`)
 
 #### 2. **CI/CD Integration**
 - ✅ **SARIF Output** - GitHub/GitLab Security tab integration
-- ✅ **JSON Output** - Machine-readable for artifacts
-- ✅ **Console Output** - Human-readable with colors
+- ✅ **JSON Output** - Machine-readable (schema v2.0.0)
+- ✅ **Console Output** - Human-readable with ANSI colors
 - ✅ **Exit Codes** - Proper CI/CD gate behavior (0/1/2/3)
-- ✅ **Docker Support** - Run anywhere, zero dependencies
+- ✅ **Docker Support** - Multi-stage Alpine build (~150MB)
 
 #### 3. **Enterprise Features**
-- ✅ **License Tier System** - Free/Pro with feature flags
+- ✅ **License Tier System** - Free/Pro infrastructure (Pro enabled)
 - ✅ **Grouped Violations** - Reduced noise, actionable reports
 - ✅ **Stable JSON Schema** - Version 2.0.0 with guaranteed ordering
-- ✅ **Verbose Mode** - --verbose flag for detailed output
-- ✅ **Fail-Fast Threshold** - --fail-on CRITICAL|HIGH|MEDIUM|LOW|INFO
+- ✅ **All Details Shown** - Full violation information by default
+- ✅ **Fail-Fast Threshold** - `--fail-on CRITICAL|HIGH|MEDIUM|LOW|INFO`
 
 #### 4. **Developer Experience**
-- ✅ **Profile Defaults** - Spring Boot by default (most common)
+- ✅ **NPM Package** - `npm install -g prod-analyzer`
+- ✅ **Simple Commands** - `npm run demo`, `npm run scan -- -d <dir>`
 - ✅ **Pre-commit Hooks** - Catch issues before commit
-- ✅ **Badge Generator** - README shields
 - ✅ **Comprehensive Docs** - CI_INTEGRATION.md with 6 platforms
 - ✅ **Clean Architecture** - SOLID principles, testable, extensible
 
 ---
 
-## 📊 Current Status
+## � NPM Package
+
+**Package Name:** `prod-analyzer`  
+**Version:** `0.1.0`  
+**Published:** ✅ Available on npm registry  
+**Command:** `prod-analyzer`
+
+### Installation
+
+```bash
+# Global installation
+npm install -g prod-analyzer
+
+# Verify installation
+prod-analyzer --version
+```
+
+---
+
+## �📊 Current Status
 
 ### Scan Capabilities
 ```bash
-# 12 security rules across 3 platforms
-✓ Spring Boot: 5 rules (profiles, Hibernate, logging, actuator, health)
-✓ Node.js: 4 rules (CORS, debug, secrets, env)
-✓ .NET: 3 rules (environment, errors, connection strings)
+# 19 security rules across 3 platforms
+✓ Spring Boot: 7 rules (profiles, Hibernate, logging, actuator, health, cookies, CSRF)
+✓ Node.js: 7 rules (CORS, debug, secrets, helmet, JWT, NODE_ENV, rate-limit)
+✓ .NET: 5 rules (environment, errors, connection strings, HTTPS, exceptions)
 ```
 
 ### Output Formats
 ```bash
 # 3 output formats
-✓ Console - Human-readable with ANSI colors
-✓ JSON - Machine-readable (schema v2.0.0)
+✓ Console - Human-readable with ANSI colors, full violation details
+✓ JSON - Machine-readable (schema v2.0.0, guaranteed ordering)
 ✓ SARIF - CI/CD integration (GitHub/GitLab Security tabs)
 ```
 
@@ -65,38 +87,104 @@ A **production-ready, enterprise-grade security scanner** for configuration file
 
 ---
 
-## 🎯 Test Results
+## 🎯 Usage Examples
 
-### Test Fixtures
+### NPM Installation & Usage
+
+```bash
+# Install globally
+npm install -g prod-analyzer
+
+# Basic scan (Spring Boot default)
+prod-analyzer scan
+
+# Scan with specific profile
+prod-analyzer scan -d ./backend --profile spring
+
+# Multi-platform scan
+prod-analyzer scan --profile all
+
+# CI mode (SARIF for GitHub Security tab)
+prod-analyzer scan --format sarif > results.sarif
+
+# Fail on HIGH or above
+prod-analyzer scan --fail-on HIGH
 ```
-test-fixtures/
-├── application.yml        (Spring Boot)
-├── application.properties (Spring Boot)
-├── appsettings.json       (.NET)
-└── (Node.js fixtures pending)
 
-Total: 10 violations found
-- 1 CRITICAL (Hibernate ddl-auto)
-- 7 HIGH (profiles, actuator, health)
-- 2 MEDIUM (logging)
+### Local Development
+
+```bash
+# Clone and install
+git clone https://github.com/onrcanogul/prod-analyzer.git
+cd prod-analyzer
+npm install
+
+# Run demo
+npm run demo
+
+# Build and scan custom directory
+npm run scan -- -d test-fixtures
+
+# Scan current project
+npm run scan -- -d .
+```
+
+---
+
+## 🧪 Test Results
+
+### Build & Test Status
+```bash
+✅ Build: TypeScript compiles (0 errors)
+✅ Tests: 68 tests passed (6 test suites)
+✅ Package: 251 files, 97.6 kB compressed
 ```
 
 ### Sample Output
-
-#### Console (Enhanced)
+{
+  "toolVersion": "1.0.0",
+  "schemaVersion": "2.0.0",
+  "licenseTier": "pro",
+  "profile": "spring",
+  "status": "FAIL",
+#### Console Output
 ```
-🔍 Secure Guard - Security Scan Results
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━ Secure Guard Scan Report ━━━
 
-STATUS: ❌ FAIL
-Deploy blocked due to 1 CRITICAL violations
+Target:      /path/to/test-fixtures
+Profile:     spring
+Environment: prod
+Scanned at:  2026-01-27T...
 
-📊 Summary: 10 violations in 4 files (10ms)
+STATUS: FAIL
+Deploy blocked due to CRITICAL violations (threshold: HIGH)
 
-🔴 CRITICAL: 1  🟠 HIGH: 7  🟡 MEDIUM: 2
+Summary:
+  Files scanned:     4
+  Entries evaluated: 33
+  Rules executed:    5
+  Scan duration:     10ms
+  Total violations:  10
+
+Blocking Violations (4 rules, 8 total):
+
+[CRITICAL] HIBERNATE_DDL_AUTO_UNSAFE (2 occurrences)
+  → application.properties:5
+    spring.jpa.hibernate.ddl-auto = create-drop
+  → application.yml
+    spring.jpa.hibernate.ddl-auto = update
+  
+[HIGH] ACTUATOR_ENDPOINTS_EXPOSED (2 occurrences)
+  ...
+
+Other Findings (2 rules, 2 total):
+[MEDIUM] DEBUG_LOGGING_ENABLED (2 occurrences)
+  ...
+
+❌ SCAN FAILED - 10 violation(s) found
 ```
 
-#### JSON (Stable Schema)
+#### JSON Output
 ```json
 {
   "toolVersion": "1.0.0",
@@ -109,7 +197,7 @@ Deploy blocked due to 1 CRITICAL violations
 }
 ```
 
-#### SARIF (GitHub/GitLab)
+#### SARIF Output
 ```json
 {
   "version": "2.1.0",
@@ -177,36 +265,89 @@ Infrastructure     → Parsers (YAML, JSON, Properties, ENV)
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start Guide
 
 ### Installation
+
 ```bash
-npm install -g secure-guard
+# From NPM (recommended)
+npm install -g prod-analyzer
+
+# Verify installation
+prod-analyzer --version
+
+# From source
+git clone https://github.com/onrcanogul/prod-analyzer.git
+cd prod-analyzer
+npm install
+npm run build
 ```
 
 ### Basic Usage
+
 ```bash
-# Scan with default Spring Boot profile
-secure-guard scan
+# Scan current directory (Spring Boot default)
+prod-analyzer scan
+
+# Scan specific directory
+prod-analyzer scan -d ./backend
 
 # Multi-platform scan
-secure-guard scan --profile all
+prod-analyzer scan --profile all
+
+# Different profiles
+prod-analyzer scan --profile spring
+prod-analyzer scan --profile node
+prod-analyzer scan --profile dotnet
 
 # CI/CD mode (SARIF for GitHub Security tab)
-secure-guard scan --format sarif > results.sarif
+prod-analyzer scan --format sarif > results.sarif
+
+# JSON for artifacts
+prod-analyzer scan --format json > security-report.json
+
+# Different thresholds
+prod-analyzer scan --fail-on CRITICAL  # Only block on CRITICAL
+prod-analyzer scan --fail-on HIGH      # Block on HIGH+ (default)
+prod-analyzer scan --fail-on MEDIUM    # Block on MEDIUM+
 ```
 
-### Docker
-```bash
-# Build
-docker build -t secure-guard .
+### Development Commands (in this repo)
 
-# Run
+```bash
+# Run demo with test fixtures
+npm run demo
+
+# Build and scan custom directory
+npm run scan -- -d test-fixtures
+
+# Scan current project
+npm run scan -- -d .
+
+# Run tests
+npm test
+
+# Build TypeScript
+npm run build
+```
+
+### Docker Usage
+
+```bash
+# Build image
+docker build -t prod-analyzer .
+
+# Run scan
 docker run --rm -v $(pwd):/workspace \
-  secure-guard scan -d /workspace --profile all
+  prod-analyzer scan -d /workspace --profile all
+
+# With JSON output
+docker run --rm -v $(pwd):/workspace \
+  prod-analyzer scan -d /workspace --format json
 ```
 
 ### Pre-commit Hook
+
 ```bash
 cp hooks/pre-commit .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
@@ -214,30 +355,61 @@ chmod +x .git/hooks/pre-commit
 
 ---
 
-## 🎓 Usage Examples
+## 🎓 CI/CD Integration Examples
 
 ### GitHub Actions
-```yaml
-- name: Security Scan
-  run: npx secure-guard scan --format sarif > results.sarif
 
-- uses: github/codeql-action/upload-sarif@v3
-  with:
-    sarif_file: results.sarif
+```yaml
+name: Security Scan
+on: [push, pull_request]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      - name: Install prod-analyzer
+        run: npm install -g prod-analyzer
+      
+      - name: Run security scan
+        run: prod-analyzer scan --format sarif > results.sarif
+      
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results.sarif
 ```
 
 ### GitLab CI
+
 ```yaml
 security-scan:
+  image: node:20-alpine
   script:
-    - npx secure-guard scan --fail-on HIGH
+    - npm install -g prod-analyzer
+    - prod-analyzer scan --format sarif > gl-sast-report.json
+    - prod-analyzer scan --fail-on HIGH
+  artifacts:
+    reports:
+      sast: gl-sast-report.json
 ```
 
 ### Jenkins
+
 ```groovy
-stage('Security Scan') {
-    steps {
-        sh 'npx secure-guard scan --fail-on HIGH'
+pipeline {
+    agent any
+    stages {
+        stage('Security Scan') {
+            steps {
+                sh 'npm install -g prod-analyzer'
+                sh 'prod-analyzer scan --fail-on HIGH'
+            }
+        }
     }
 }
 ```
