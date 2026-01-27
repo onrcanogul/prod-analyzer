@@ -110,27 +110,30 @@ export function formatEnhancedConsoleReport(
     lines.push(`${colors.bold}${colors.red}Blocking Violations (${blockers.length} rules, ${blockers.reduce((sum, g) => sum + g.count, 0)} total):${colors.reset}`);
     lines.push('');
     
-    for (const group of blockers) {
-      const severityColor = getSeverityColor(group.severity);
-      const severityName = Severity[group.severity];
-      
-      lines.push(`${colors.bold}${severityColor}[${severityName}] ${group.ruleId}${colors.reset} ${colors.dim}(${group.count} occurrence${group.count > 1 ? 's' : ''})${colors.reset}`);
-      
-      // Show ALL occurrences (not just first 3)
-      for (const occ of group.occurrences) {
-        const lineInfo = occ.lineNumber ? `:${occ.lineNumber}` : '';
-        lines.push(`  ${colors.dim}→${colors.reset} ${occ.filePath}${lineInfo}`);
-        lines.push(`    ${occ.configKey} = ${occ.configValue}`);
+    // Group by severity for clearer visual separation
+    const criticalBlockers = blockers.filter(g => g.severity === Severity.CRITICAL);
+    const highBlockers = blockers.filter(g => g.severity === Severity.HIGH);
+    const otherBlockers = blockers.filter(g => g.severity !== Severity.CRITICAL && g.severity !== Severity.HIGH);
+    
+    // Show CRITICAL violations first
+    if (criticalBlockers.length > 0) {
+      for (const group of criticalBlockers) {
+        formatViolationGroup(group, lines);
       }
-      
-      // Show message and fix from first occurrence
-      const first = group.occurrences[0];
-      if (first) {
-        lines.push(`  ${colors.dim}Issue:${colors.reset} ${first.message}`);
-        lines.push(`  ${colors.dim}Fix:${colors.reset}   ${first.suggestion}`);
+    }
+    
+    // Then HIGH violations
+    if (highBlockers.length > 0) {
+      for (const group of highBlockers) {
+        formatViolationGroup(group, lines);
       }
-      
-      lines.push('');
+    }
+    
+    // Finally other severity levels
+    if (otherBlockers.length > 0) {
+      for (const group of otherBlockers) {
+        formatViolationGroup(group, lines);
+      }
     }
   }
   
@@ -140,26 +143,7 @@ export function formatEnhancedConsoleReport(
     lines.push('');
     
     for (const group of nonBlockers) {
-      const severityColor = getSeverityColor(group.severity);
-      const severityName = Severity[group.severity];
-      
-      lines.push(`${colors.bold}${severityColor}[${severityName}] ${group.ruleId}${colors.reset} ${colors.dim}(${group.count} occurrence${group.count > 1 ? 's' : ''})${colors.reset}`);
-      
-      // Show ALL occurrences
-      for (const occ of group.occurrences) {
-        const lineInfo = occ.lineNumber ? `:${occ.lineNumber}` : '';
-        lines.push(`  ${colors.dim}→${colors.reset} ${occ.filePath}${lineInfo}`);
-        lines.push(`    ${occ.configKey} = ${occ.configValue}`);
-      }
-      
-      // Show message and fix from first occurrence
-      const first = group.occurrences[0];
-      if (first) {
-        lines.push(`  ${colors.dim}Issue:${colors.reset} ${first.message}`);
-        lines.push(`  ${colors.dim}Fix:${colors.reset}   ${first.suggestion}`);
-      }
-      
-      lines.push('');
+      formatViolationGroup(group, lines);
     }
   }
   
@@ -175,6 +159,32 @@ export function formatEnhancedConsoleReport(
   lines.push('');
   
   return lines.join('\n');
+}
+
+/**
+ * Formats a single violation group.
+ */
+function formatViolationGroup(group: any, lines: string[]): void {
+  const severityColor = getSeverityColor(group.severity);
+  const severityName = Severity[group.severity];
+  
+  lines.push(`${colors.bold}${severityColor}[${severityName}] ${group.ruleId}${colors.reset} ${colors.dim}(${group.count} occurrence${group.count > 1 ? 's' : ''})${colors.reset}`);
+  
+  // Show ALL occurrences
+  for (const occ of group.occurrences) {
+    const lineInfo = occ.lineNumber ? `:${occ.lineNumber}` : '';
+    lines.push(`  ${colors.dim}→${colors.reset} ${occ.filePath}${lineInfo}`);
+    lines.push(`    ${occ.configKey} = ${occ.configValue}`);
+  }
+  
+  // Show message and fix from first occurrence
+  const first = group.occurrences[0];
+  if (first) {
+    lines.push(`  ${colors.dim}Issue:${colors.reset} ${first.message}`);
+    lines.push(`  ${colors.dim}Fix:${colors.reset}   ${first.suggestion}`);
+  }
+  
+  lines.push('');
 }
 
 /**

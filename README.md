@@ -15,7 +15,7 @@ prod-analyzer is a **fail-fast CI gate tool** designed to prevent misconfigured 
 - **Multi-Platform Support** - Spring Boot, Node.js, .NET
 - **CI/CD Ready** - SARIF output, GitHub/GitLab integration
 - **Profile-Based Scanning** - Only run relevant rules
-- **19 Built-in Security Rules** - Comprehensive coverage
+- **27 Built-in Security Rules** - Comprehensive coverage across platforms
 - **Docker Support** - Run anywhere
 - **Zero Configuration** - Works out of the box
 
@@ -118,9 +118,9 @@ prod-analyzer scan --fail-on HIGH || echo "Deployment blocked!"
 
 ## Security Rules
 
-prod-analyzer includes **19 built-in security rules** across 3 platforms:
+prod-analyzer includes **27 built-in security rules** across 4 categories:
 
-### Spring Boot Rules (7)
+### Spring Boot Rules (9)
 
 #### 1. SPRING_PROFILE_DEV_ACTIVE (HIGH)
 Detects when development or test Spring profiles are active.
@@ -220,6 +220,44 @@ Detects when developer exception page is enabled.
 Detects when HTTPS redirection is disabled.
 - **Triggers:** `RequireHttpsMetadata = false`
 - **Why:** Allows unencrypted traffic, enabling man-in-the-middle attacks.
+
+### General/Framework-Agnostic Rules (6)
+
+#### 20. DEFAULT_PASSWORDS (CRITICAL)
+Detects common default passwords, placeholder values, and weak credentials.
+- **Triggers:** Password fields containing `admin`, `password`, `changeme`, `test`, `123456`, `qwerty`, etc.
+- **Why:** Weak or default passwords can be easily compromised, leading to unauthorized access.
+- **Impact:** Applies to all configuration files regardless of framework.
+
+#### 21. PRIVATE_KEY_IN_REPO (CRITICAL)
+Detects private keys stored directly in configuration files.
+- **Triggers:** SSH keys, RSA keys, PEM files, or `-----BEGIN PRIVATE KEY-----` headers
+- **Why:** Storing private keys in configuration exposes them to anyone with repository access.
+- **Impact:** Immediate key rotation required if detected.
+
+#### 22. CLOUD_TOKEN_EXPOSURE (CRITICAL)
+Detects exposed cloud provider API keys, tokens, and credentials.
+- **Triggers:** AWS keys (`AKIA...`), GitHub tokens (`ghp_...`), Stripe keys (`sk_live_...`), Google API keys, Azure keys, etc.
+- **Why:** Exposed cloud credentials can lead to massive data breaches and financial loss.
+- **Impact:** Supports AWS, GitHub, Stripe, Google Cloud, Azure, Slack, Twilio, SendGrid.
+
+#### 23. TLS_VERIFY_DISABLED (CRITICAL)
+Detects disabled TLS/SSL certificate verification.
+- **Triggers:** `NODE_TLS_REJECT_UNAUTHORIZED=0`, `SSL_VERIFY=false`, `INSECURE=true`
+- **Why:** Disabling TLS verification allows man-in-the-middle attacks and data interception.
+- **Impact:** Critical security vulnerability requiring immediate remediation.
+
+#### 24. ALLOW_INSECURE_HTTP (HIGH)
+Detects configuration that allows or enforces insecure HTTP instead of HTTPS.
+- **Triggers:** `ALLOW_HTTP=true`, `http://` URLs in API endpoints, webhooks
+- **Why:** HTTP traffic can be intercepted and modified by attackers.
+- **Impact:** All external communications should use HTTPS.
+
+#### 25. PUBLIC_S3_BUCKET (HIGH)
+Detects S3 bucket configurations that may expose data publicly.
+- **Triggers:** `ACL=public-read`, `BLOCK_PUBLIC_ACLS=false`, public access settings
+- **Why:** Public S3 buckets can lead to massive data leaks.
+- **Impact:** Applies to AWS S3 and compatible storage services.
 
 ## Architecture
 

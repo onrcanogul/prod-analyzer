@@ -50,6 +50,16 @@ import {
   requireHttpsRule,
 } from './dotnet';
 
+// General/Framework-Agnostic Rules
+import {
+  defaultPasswordsRule,
+  privateKeyInRepoRule,
+  cloudTokenExposureRule,
+  tlsVerifyDisabledRule,
+  allowInsecureHttpRule,
+  publicS3BucketRule,
+} from './general';
+
 /**
  * Export individual rules for direct imports when needed.
  */
@@ -78,6 +88,13 @@ export {
   connectionStringExposureRule,
   developerExceptionPageRule,
   requireHttpsRule,
+  // General/Framework-Agnostic
+  defaultPasswordsRule,
+  privateKeyInRepoRule,
+  cloudTokenExposureRule,
+  tlsVerifyDisabledRule,
+  allowInsecureHttpRule,
+  publicS3BucketRule,
 };
 
 /**
@@ -109,5 +126,12 @@ export const ALL_RULES: readonly Rule[] = [
   connectionStringExposureRule,
   developerExceptionPageRule,
   requireHttpsRule,
+  // General/Framework-Agnostic (6 rules)
+  defaultPasswordsRule,
+  privateKeyInRepoRule,
+  cloudTokenExposureRule,
+  tlsVerifyDisabledRule,
+  allowInsecureHttpRule,
+  publicS3BucketRule,
 ] as const;
 
