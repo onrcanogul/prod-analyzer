@@ -1,6 +1,104 @@
 # 🚀 Quick Usage Guide
 
-## NPM Scripts
+## Installation
+
+### Global Installation (Recommended)
+Install once, use anywhere:
+```bash
+npm install -g prod-analyzer
+```
+
+Then run from any directory:
+```bash
+prod-analyzer scan
+prod-analyzer scan --profile all
+prod-analyzer scan -d ./backend --fail-on CRITICAL
+```
+
+### Local Installation (Per Project)
+Install in your project:
+```bash
+npm install --save-dev prod-analyzer
+```
+
+Then run via npx or package.json scripts:
+```bash
+# Using npx
+npx prod-analyzer scan
+
+# Or add to package.json scripts:
+{
+  "scripts": {
+    "security:scan": "prod-analyzer scan --profile all",
+    "security:critical": "prod-analyzer scan --fail-on CRITICAL"
+  }
+}
+
+# Then run:
+npm run security:scan
+```
+
+---
+
+## Basic Usage
+
+### 1. Scan Current Directory (Default: Spring Boot)
+```bash
+prod-analyzer scan
+```
+
+### 2. Scan Specific Directory
+```bash
+prod-analyzer scan -d ./backend
+prod-analyzer scan -d /path/to/project
+```
+
+### 3. Scan with Different Profile
+```bash
+# Spring Boot only
+prod-analyzer scan --profile spring
+
+# Node.js only
+prod-analyzer scan --profile node
+
+# .NET only
+prod-analyzer scan --profile dotnet
+
+# All platforms
+prod-analyzer scan --profile all
+```
+
+### 4. Set Fail Threshold
+```bash
+# Fail on CRITICAL only (most permissive)
+prod-analyzer scan --fail-on CRITICAL
+
+# Fail on HIGH or above (default)
+prod-analyzer scan --fail-on HIGH
+
+# Fail on MEDIUM or above
+prod-analyzer scan --fail-on MEDIUM
+```
+
+### 5. Different Output Formats
+```bash
+# Console (default - human readable)
+prod-analyzer scan
+
+# JSON (for CI/CD artifacts)
+prod-analyzer scan --format json > security-report.json
+
+# SARIF (for GitHub/GitLab Security tab)
+prod-analyzer scan --format sarif > results.sarif
+```
+
+---
+
+## Development Mode (From Source)
+
+If you're developing prod-analyzer itself:
+
+### NPM Scripts
 
 ### 1. `npm run demo`
 Runs a demonstration scan on test fixtures with verbose output.

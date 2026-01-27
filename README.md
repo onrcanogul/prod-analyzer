@@ -13,6 +13,7 @@ prod-analyzer is a **fail-fast CI gate tool** designed to prevent misconfigured 
 
 **Key Features:**
 - **Multi-Platform Support** - Spring Boot, Node.js, .NET
+- **Custom Policy Engine** - Define company-specific security rules in YAML
 - **CI/CD Ready** - SARIF output, GitHub/GitLab integration
 - **Profile-Based Scanning** - Only run relevant rules
 - **27 Built-in Security Rules** - Comprehensive coverage across platforms
@@ -258,6 +259,173 @@ Detects S3 bucket configurations that may expose data publicly.
 - **Triggers:** `ACL=public-read`, `BLOCK_PUBLIC_ACLS=false`, public access settings
 - **Why:** Public S3 buckets can lead to massive data leaks.
 - **Impact:** Applies to AWS S3 and compatible storage services.
+
+---
+
+## Custom Policy Engine
+
+One of prod-analyzer's unique features is the **Policy Engine** - allowing you to define company-specific security rules without writing code.
+
+### Why Use Policies?
+
+- **Company-Specific Rules**: Enforce your organization's security standards
+- **No Code Required**: Simple YAML syntax for non-technical teams
+- **Flexible Enforcement**: Forbidden values, required values, or regex patterns
+- **Complements Built-in Rules**: Policies run alongside the 27 built-in rules
+
+### Quick Example
+
+Create a `.prod-analyzer-policy.yml` file in your project root:
+
+```yaml
+policies:
+  name: "Company Production Policy"
+  version: "1.0.0"
+  description: "Enforces our production standards"
+  
+  rules:
+    - id: "no-ddl-auto-create"
+      description: "Prevent automatic schema modification"
+      key: "spring.jpa.hibernate.ddl-auto"
+      forbiddenValues:
+        - "create"
+        - "create-drop"
+        - "update"
+      severity: CRITICAL
+      message: "DDL auto operations are forbidden by company policy"
+      suggestion: "Use 'validate' or 'none'"
+    
+    - id: "require-prod-profile"
+      description: "Enforce production profile"
+      key: "spring.profiles.active"
+      requiredValue: "prod"
+      severity: HIGH
+      message: "Production profile is required"
+```
+
+### Policy Rule Types
+
+**1. Forbidden Values** - Block specific values
+```yaml
+- id: "no-weak-passwords"
+  key: "DB_PASSWORD"
+  forbiddenValues:
+    - "admin"
+    - "password"
+    - "changeme"
+  severity: CRITICAL
+  message: "Weak database password detected"
+```
+
+**2. Required Values** - Enforce specific values
+```yaml
+- id: "require-production-env"
+  key: "NODE_ENV"
+  requiredValue: "production"
+  severity: CRITICAL
+  message: "NODE_ENV must be 'production'"
+```
+
+**3. Pattern Matching** - Use regex for complex rules
+```yaml
+- id: "no-http-urls"
+  key: "API_URL"
+  forbiddenPattern: "^http://.*"
+  severity: HIGH
+  message: "API URLs must use HTTPS"
+```
+
+**4. Wildcard Keys** - Match multiple configuration keys
+```yaml
+- id: "no-debug-logging"
+  key: "logging.level.*"
+  forbiddenValues:
+    - "DEBUG"
+    - "TRACE"
+  severity: HIGH
+  message: "Debug logging forbidden in production"
+```
+
+### Example Policy Files
+
+We provide complete policy examples for each platform:
+
+- **Spring Boot**: `examples/policies/spring-boot-production.policy.yml`
+  - No DDL auto operations
+  - Production profiles only
+  - Secure actuator endpoints
+  - Safe logging levels
+
+- **Node.js**: `examples/policies/nodejs-production.policy.yml`
+  - NODE_ENV=production enforcement
+  - Strong secrets validation
+  - HTTPS-only URLs
+  - Secure CORS settings
+
+- **.NET**: `examples/policies/dotnet-production.policy.yml`
+  - Production environment enforcement
+  - No detailed errors
+  - HTTPS-only configuration
+  - Secure logging levels
+
+### Usage
+
+Policies are automatically discovered if you name your file:
+- `.prod-analyzer-policy.yml`
+- `.prod-analyzer-policy.yaml`
+- `prod-analyzer-policy.yml`
+- `prod-analyzer-policy.yaml`
+
+Place it in the directory you're scanning, and prod-analyzer will apply it:
+
+```bash
+# Policy is automatically loaded from current directory
+prod-analyzer scan
+
+# Explicitly scan a directory with policy
+prod-analyzer scan -d ./backend
+
+# Policy violations appear in output with [POLICY:rule_id] prefix
+```
+
+### Policy Output Example
+
+```
+[CRITICAL] POLICY:no-ddl-auto-create (1 occurrence)
+  → application.properties:5
+    spring.jpa.hibernate.ddl-auto = create-drop
+  Issue: [Company Production Policy] DDL auto operations are forbidden by company policy
+  Fix:   Use 'validate' or 'none'
+```
+
+For complete policy documentation, see:
+- **[Policy Guide](docs/POLICY_GUIDE.md)** - Complete policy creation reference
+- **[Example Policies](examples/policies/)** - Ready-to-use policy templates
+
+---
+
+## Documentation
+
+### Core Documentation
+
+- **[Quick Start Guide](docs/QUICKSTART.md)** - Get started in 5 minutes
+- **[Usage Guide](docs/USAGE_GUIDE.md)** - Complete CLI reference
+- **[Policy Guide](docs/POLICY_GUIDE.md)** - Custom policy creation
+- **[Scan Mechanism](docs/SCAN_MECHANISM.md)** - Technical deep dive into how scanning works
+
+### Advanced Topics
+
+- **[Architecture](ARCHITECTURE.md)** - System design and clean architecture
+- **[CI/CD Integration](docs/CI_INTEGRATION.md)** - GitHub Actions, GitLab CI, Jenkins
+- **[External Project Integration](docs/EXTERNAL_PROJECT_INTEGRATION.md)** - Using in other projects
+- **[NPM Publishing](docs/NPM_PUBLISH.md)** - Publishing to npm registry
+
+### Examples
+
+- **[Example Policies](examples/policies/)** - Spring Boot, Node.js, .NET policy templates
+- **[Test Fixtures](test-fixtures/)** - Sample configuration files with intentional violations
+
+---
 
 ## Architecture
 

@@ -1,0 +1,52 @@
+# =============================================================================
+# ŞİRKET ÜRETİM KURALLARI - ÖRNEK
+# =============================================================================
+
+policies:
+  name: "Acme Corp Production Policy"
+  version: "1.0.0"
+  description: "Acme şirketinin production standartları"
+
+  metadata:
+    owner: "DevOps Team"
+    contact: "devops@acme.com"
+
+  rules:
+    - id: "enforce-production-env"
+      description: "NODE_ENV production olmak zorunda"
+      key: "NODE_ENV"
+      requiredValue: "production"
+      severity: CRITICAL
+      message: "NODE_ENV production'da 'production' olmalı"
+      suggestion: "NODE_ENV=production set edin"
+
+    - id: "no-weak-database-passwords"
+      description: "Zayıf database şifreleri yasak"
+      key: "DB_PASSWORD"
+      forbiddenValues:
+        - "admin"
+        - "password"
+        - "123456"
+        - "changeme"
+        - "root"
+      severity: CRITICAL
+      message: "Database şifresi çok zayıf - şirket politikası ihlali"
+      suggestion: "Minimum 16 karakter güçlü şifre kullan"
+
+    - id: "no-http-api-urls"
+      description: "API URL'ler HTTPS kullanmalı"
+      key: "API_URL"
+      forbiddenPattern: "^http://.*"
+      severity: HIGH
+      message: "API URL HTTP kullanıyor - güvenli değil"
+      suggestion: "https:// kullan"
+
+    - id: "no-debug-in-any-logger"
+      description: "Hiçbir logger DEBUG seviyesinde olamaz"
+      key: "logging.level.*"
+      forbiddenValues:
+        - "DEBUG"
+        - "TRACE"
+      severity: HIGH
+      message: "Debug logging production'da hassas bilgi sızdırır"
+      suggestion: "INFO veya WARN kullan"

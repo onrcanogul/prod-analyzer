@@ -1,0 +1,124 @@
+# =============================================================================
+# PRODUCTION POLICY - .NET / ASP.NET CORE
+# =============================================================================
+# 
+# This policy enforces production-ready configurations for .NET apps.
+# Place this file as `.prod-analyzer-policy.yml` in your project root.
+#
+# Key Features:
+# - Enforces Production environment
+# - Prevents developer exception pages
+# - Requires HTTPS
+# - Enforces secure logging
+# =============================================================================
+
+policies:
+  name: ".NET Production Policy"
+  version: "1.0.0"
+  description: "Enforces production-ready .NET/ASP.NET Core configurations"
+  
+  metadata:
+    owner: "Platform Team"
+    contact: "platform@company.com"
+    lastUpdated: "2025-01-15"
+  
+  rules:
+    # -------------------------------------------------------------------------
+    # ENVIRONMENT
+    # -------------------------------------------------------------------------
+    - id: "require-production-environment"
+      description: "Enforce Production environment"
+      key: "ASPNETCORE_ENVIRONMENT"
+      requiredValue: "Production"
+      severity: CRITICAL
+      message: "ASPNETCORE_ENVIRONMENT must be set to 'Production'."
+      suggestion: "Set ASPNETCORE_ENVIRONMENT=Production"
+      caseInsensitive: false
+    
+    - id: "no-development-environment"
+      description: "Prevent Development environment"
+      key: "ASPNETCORE_ENVIRONMENT"
+      forbiddenValues:
+        - "Development"
+        - "Staging"
+        - "Test"
+        - "Local"
+      severity: CRITICAL
+      message: "Non-production ASPNETCORE_ENVIRONMENT detected."
+      suggestion: "Set ASPNETCORE_ENVIRONMENT=Production"
+      caseInsensitive: false
+    
+    # -------------------------------------------------------------------------
+    # ERROR HANDLING
+    # -------------------------------------------------------------------------
+    - id: "no-detailed-errors"
+      description: "Prevent detailed error messages"
+      key: "DetailedErrors"
+      forbiddenValues:
+        - "true"
+        - "True"
+      severity: HIGH
+      message: "Detailed errors expose sensitive application information."
+      suggestion: "Set DetailedErrors=false or remove this setting"
+      caseInsensitive: false
+    
+    # -------------------------------------------------------------------------
+    # HTTPS
+    # -------------------------------------------------------------------------
+    - id: "require-https-only"
+      description: "Enforce HTTPS-only URLs"
+      key: "ASPNETCORE_URLS"
+      forbiddenPattern: "^http://.*"
+      severity: CRITICAL
+      message: "HTTP URLs detected. Production must use HTTPS only."
+      suggestion: "Use https:// URLs only (e.g., https://+:443)"
+      caseInsensitive: false
+    
+    # -------------------------------------------------------------------------
+    # LOGGING
+    # -------------------------------------------------------------------------
+    - id: "no-debug-logging"
+      description: "Prevent Debug/Trace logging"
+      key: "Logging:LogLevel:Default"
+      forbiddenValues:
+        - "Debug"
+        - "Trace"
+      severity: HIGH
+      message: "Debug/Trace logging exposes sensitive data in production."
+      suggestion: "Set Logging:LogLevel:Default=Information or Warning"
+      caseInsensitive: false
+    
+    - id: "no-debug-logging-microsoft"
+      description: "Prevent Debug/Trace logging for Microsoft namespace"
+      key: "Logging:LogLevel:Microsoft"
+      forbiddenValues:
+        - "Debug"
+        - "Trace"
+      severity: MEDIUM
+      message: "Debug/Trace logging for Microsoft namespace is too verbose."
+      suggestion: "Set Logging:LogLevel:Microsoft=Warning"
+      caseInsensitive: false
+    
+    # -------------------------------------------------------------------------
+    # CONNECTION STRINGS
+    # -------------------------------------------------------------------------
+    - id: "no-integrated-security-false"
+      description: "Prefer integrated security for SQL Server"
+      key: "ConnectionStrings:*"
+      forbiddenPattern: "Integrated Security=false"
+      severity: MEDIUM
+      message: "SQL Server connection uses explicit credentials instead of integrated security."
+      suggestion: "Use Integrated Security=true where possible"
+      caseInsensitive: true
+    
+    # -------------------------------------------------------------------------
+    # SECURITY HEADERS
+    # -------------------------------------------------------------------------
+    - id: "require-hsts"
+      description: "Enforce HSTS (HTTP Strict Transport Security)"
+      key: "Hsts:Enabled"
+      requiredValue: "true"
+      severity: HIGH
+      message: "HSTS should be enabled in production for security."
+      suggestion: "Set Hsts:Enabled=true"
+      caseInsensitive: false

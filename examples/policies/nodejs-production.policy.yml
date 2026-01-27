@@ -1,0 +1,165 @@
+# =============================================================================
+# PRODUCTION POLICY - NODE.JS
+# =============================================================================
+# 
+# This policy enforces production-ready configurations for Node.js apps.
+# Place this file as `.prod-analyzer-policy.yml` in your project root.
+#
+# Key Features:
+# - Enforces NODE_ENV=production
+# - Prohibits debug mode
+# - Enforces strong secrets and passwords
+# - Requires HTTPS
+# - Prevents CORS wildcards
+# =============================================================================
+
+policies:
+  name: "Node.js Production Policy"
+  version: "1.0.0"
+  description: "Enforces production-ready Node.js configurations"
+  
+  metadata:
+    owner: "Platform Team"
+    contact: "platform@company.com"
+    lastUpdated: "2025-01-15"
+  
+  rules:
+    # -------------------------------------------------------------------------
+    # ENVIRONMENT
+    # -------------------------------------------------------------------------
+    - id: "require-production-env"
+      description: "Enforce NODE_ENV=production"
+      key: "NODE_ENV"
+      requiredValue: "production"
+      severity: CRITICAL
+      message: "NODE_ENV must be set to 'production' in production environments."
+      suggestion: "Set NODE_ENV=production"
+      caseInsensitive: false
+    
+    - id: "no-development-env"
+      description: "Prevent development environment"
+      key: "NODE_ENV"
+      forbiddenValues:
+        - "development"
+        - "dev"
+        - "test"
+        - "local"
+      severity: CRITICAL
+      message: "Development/test NODE_ENV detected in production configuration."
+      suggestion: "Set NODE_ENV=production"
+      caseInsensitive: false
+    
+    # -------------------------------------------------------------------------
+    # DEBUG & LOGGING
+    # -------------------------------------------------------------------------
+    - id: "no-debug-wildcard"
+      description: "Prevent DEBUG=* (all modules)"
+      key: "DEBUG"
+      forbiddenValues:
+        - "*"
+      severity: HIGH
+      message: "DEBUG=* enables verbose logging for all modules, exposing sensitive data."
+      suggestion: "Disable debug logging or specify only necessary modules"
+      caseInsensitive: false
+    
+    - id: "no-verbose-logging"
+      description: "Prevent verbose logging"
+      key: "LOG_LEVEL"
+      forbiddenValues:
+        - "debug"
+        - "verbose"
+        - "silly"
+        - "trace"
+      severity: MEDIUM
+      message: "Verbose logging levels expose sensitive data in production."
+      suggestion: "Set LOG_LEVEL=info or LOG_LEVEL=warn"
+      caseInsensitive: true
+    
+    # -------------------------------------------------------------------------
+    # SECURITY - SECRETS
+    # -------------------------------------------------------------------------
+    - id: "no-weak-jwt-secret"
+      description: "Prevent weak JWT secrets"
+      key: "JWT_SECRET"
+      forbiddenPattern: "^(secret|changeme|test|password|123|admin).*"
+      severity: CRITICAL
+      message: "JWT_SECRET is too weak or uses common words."
+      suggestion: "Use a strong random string (minimum 32 characters)"
+      caseInsensitive: true
+    
+    - id: "no-default-session-secret"
+      description: "Prevent default session secrets"
+      key: "SESSION_SECRET"
+      forbiddenValues:
+        - "secret"
+        - "changeme"
+        - "keyboard cat"
+        - "my-secret"
+        - "session-secret"
+      severity: CRITICAL
+      message: "SESSION_SECRET uses a weak or default value."
+      suggestion: "Use a strong random string (minimum 32 characters)"
+      caseInsensitive: true
+    
+    - id: "no-weak-encryption-key"
+      description: "Prevent weak encryption keys"
+      key: "ENCRYPTION_KEY"
+      forbiddenPattern: "^.{0,31}$"
+      severity: CRITICAL
+      message: "ENCRYPTION_KEY is too short (minimum 32 characters required)."
+      suggestion: "Use a strong random string (minimum 32 characters)"
+      caseInsensitive: false
+    
+    # -------------------------------------------------------------------------
+    # SECURITY - CORS
+    # -------------------------------------------------------------------------
+    - id: "no-cors-wildcard"
+      description: "Prevent CORS wildcard origin"
+      key: "CORS_ORIGIN"
+      forbiddenValues:
+        - "*"
+      severity: HIGH
+      message: "CORS wildcard origin allows requests from any domain."
+      suggestion: "Specify allowed origins explicitly (e.g., https://app.company.com)"
+      caseInsensitive: false
+    
+    # -------------------------------------------------------------------------
+    # SECURITY - TLS/SSL
+    # -------------------------------------------------------------------------
+    - id: "no-tls-reject-unauthorized-disabled"
+      description: "Prevent disabling TLS certificate validation"
+      key: "NODE_TLS_REJECT_UNAUTHORIZED"
+      forbiddenValues:
+        - "0"
+        - "false"
+      severity: CRITICAL
+      message: "TLS certificate validation is disabled, allowing man-in-the-middle attacks."
+      suggestion: "Remove NODE_TLS_REJECT_UNAUTHORIZED or set to 1"
+      caseInsensitive: false
+    
+    # -------------------------------------------------------------------------
+    # DATABASE
+    # -------------------------------------------------------------------------
+    - id: "no-weak-db-password"
+      description: "Prevent weak database passwords"
+      key: "DB_PASSWORD"
+      forbiddenValues:
+        - "password"
+        - "admin"
+        - "root"
+        - "changeme"
+        - "123456"
+        - ""
+      severity: CRITICAL
+      message: "Database password is weak or missing."
+      suggestion: "Use a strong random password"
+      caseInsensitive: true
+    
+    - id: "require-db-ssl"
+      description: "Enforce database SSL connection"
+      key: "DB_SSL"
+      requiredValue: "true"
+      severity: HIGH
+      message: "Database connections should use SSL/TLS encryption."
+      suggestion: "Set DB_SSL=true"
+      caseInsensitive: false

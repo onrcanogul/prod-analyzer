@@ -12,12 +12,14 @@ import { ScanResult } from './../../domain/models/scan-result';
  * 2. Parse each file based on its format
  * 3. Extract configuration entries
  * 4. Execute rules against entries
- * 5. Aggregate results into a ScanResult
+ * 5. Load and evaluate custom policies (if present)
+ * 6. Aggregate results into a ScanResult
  * 
  * Design Decisions:
  * - Single responsibility: orchestration only
  * - Delegates parsing to infrastructure layer
  * - Delegates rule execution to rule engine
+ * - Delegates policy evaluation to policy engine
  * - Returns immutable ScanResult
  */
 
@@ -31,8 +33,11 @@ import {
   DiscoveredFile,
 } from '../../infrastructure';
 import { parseConfigFile } from '../../infrastructure/parsers/config-parser-factory';
+import { findAndLoadPolicy } from '../../infrastructure/policy-loader';
+import { evaluatePolicy, mergePolicyViolations } from '../../domain/policy-engine';
 import { ScanOptions } from '../models/scan-options';
 import { executeRules, createRuleRegistry } from './rule-engine';
+import { Violation } from '../../domain/models/violation';
 
 /**
  * Performs a complete scan of the target directory.
@@ -67,14 +72,32 @@ export async function scan(options: ScanOptions): Promise<ScanResult> {
   const registry = createRuleRegistry(ALL_RULES, options.profile);
   const executionResult = executeRules(allEntries, registry);
   
-  // Step 5: Create scan result
+  // Step 5: Load and evaluate custom policy (if present)
+  let policyViolations: Violation[] = [];
+  
+  try {
+    const policy = await findAndLoadPolicy(options.targetDirectory);
+    
+    if (policy) {
+      const policyResults = evaluatePolicy(policy, allEntries);
+      policyViolations = mergePolicyViolations(policyResults);
+      console.log(`✓ Evaluated ${policy.rules.length} custom policy rules from '${policy.name}'`);
+    }
+  } catch (error) {
+    console.warn(`Warning: Failed to load custom policy:`, error);
+  }
+  
+  // Step 6: Merge violations from rules and policies
+  const allViolations = [...executionResult.violations, ...policyViolations];
+  
+  // Step 7: Create scan result
   const endTime = Date.now();
   
   return createScanResult({
     targetDirectory: options.targetDirectory,
     environment: options.environment,
     profile: options.profile,
-    violations: executionResult.violations,
+    violations: allViolations,
     statistics: {
       filesScanned: discoveredFiles.length,
       entriesEvaluated: executionResult.entriesEvaluated,

@@ -1,0 +1,22 @@
+policies:
+  name: "Test Policy - Spring Boot"
+  version: "1.0.0"
+  description: "Test policy for Spring Boot scanner"
+  
+  rules:
+    - id: "test-no-ddl-create"
+      description: "Test forbidden DDL operations"
+      key: "spring.jpa.hibernate.ddl-auto"
+      forbiddenValues:
+        - "create"
+        - "create-drop"
+      severity: CRITICAL
+      message: "DDL auto create is forbidden by company policy"
+      suggestion: "Use validate or none"
+    
+    - id: "test-require-prod-profile"
+      description: "Test required production profile"
+      key: "spring.profiles.active"
+      requiredValue: "prod"
+      severity: HIGH
+      message: "Production profile is required"

@@ -1,7 +1,7 @@
 {
   "name": "prod-analyzer",
-  "version": "0.1.2",
-  "description": "Fail-fast CI guard for dangerous production misconfigurations across Spring Boot, Node.js, and .NET",
+  "version": "0.2.0",
+  "description": "Fail-fast CI guard for dangerous production misconfigurations across Spring Boot, Node.js, and .NET with custom policy engine",
   "main": "dist/cli/main.js",
   "bin": {
     "prod-analyzer": "dist/cli/main.js"
@@ -9,7 +9,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "examples/policies/*.yml"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

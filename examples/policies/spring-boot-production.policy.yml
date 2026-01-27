@@ -1,0 +1,126 @@
+# =============================================================================
+# PRODUCTION POLICY - SPRING BOOT
+# =============================================================================
+# 
+# This policy enforces production-ready configurations for Spring Boot apps.
+# Place this file as `.prod-analyzer-policy.yml` in your project root.
+#
+# Key Features:
+# - Prohibits dangerous database DDL operations
+# - Enforces production logging levels
+# - Prevents development/test Spring profiles
+# - Enforces secure endpoint configurations
+# =============================================================================
+
+policies:
+  name: "Spring Boot Production Policy"
+  version: "1.0.0"
+  description: "Enforces production-ready Spring Boot configurations"
+  
+  metadata:
+    owner: "Platform Team"
+    contact: "platform@company.com"
+    lastUpdated: "2025-01-15"
+  
+  rules:
+    # -------------------------------------------------------------------------
+    # DATABASE SAFETY
+    # -------------------------------------------------------------------------
+    - id: "no-ddl-auto-create"
+      description: "Prevent automatic schema creation/modification in production"
+      key: "spring.jpa.hibernate.ddl-auto"
+      forbiddenValues:
+        - "create"
+        - "create-drop"
+        - "update"
+      severity: CRITICAL
+      message: "Automatic DDL schema operations are forbidden in production. Use 'validate' or 'none'."
+      suggestion: "Set spring.jpa.hibernate.ddl-auto=validate or spring.jpa.hibernate.ddl-auto=none"
+      caseInsensitive: true
+    
+    # -------------------------------------------------------------------------
+    # LOGGING SECURITY
+    # -------------------------------------------------------------------------
+    - id: "no-debug-logging-root"
+      description: "Prevent DEBUG level logging at root"
+      key: "logging.level.root"
+      forbiddenValues:
+        - "DEBUG"
+        - "TRACE"
+      severity: HIGH
+      message: "DEBUG/TRACE logging at root level exposes sensitive data in production."
+      suggestion: "Set logging.level.root=INFO or logging.level.root=WARN"
+      caseInsensitive: true
+    
+    - id: "no-debug-logging-wildcard"
+      description: "Prevent DEBUG logging for all packages"
+      key: "logging.level.*"
+      forbiddenValues:
+        - "DEBUG"
+        - "TRACE"
+      severity: HIGH
+      message: "DEBUG/TRACE logging exposes sensitive data in production."
+      suggestion: "Use INFO, WARN, or ERROR level"
+      caseInsensitive: true
+    
+    # -------------------------------------------------------------------------
+    # SPRING PROFILES
+    # -------------------------------------------------------------------------
+    - id: "no-dev-profiles"
+      description: "Prevent development/test profiles in production"
+      key: "spring.profiles.active"
+      forbiddenValues:
+        - "dev"
+        - "development"
+        - "test"
+        - "local"
+      severity: CRITICAL
+      message: "Development/test Spring profiles detected. Must use 'prod' or 'production'."
+      suggestion: "Set spring.profiles.active=prod"
+      caseInsensitive: true
+    
+    - id: "require-prod-profile"
+      description: "Enforce production profile"
+      key: "spring.profiles.active"
+      requiredValue: "prod"
+      severity: HIGH
+      message: "Production profile must be explicitly set."
+      suggestion: "Set spring.profiles.active=prod"
+      caseInsensitive: true
+    
+    # -------------------------------------------------------------------------
+    # ACTUATOR SECURITY
+    # -------------------------------------------------------------------------
+    - id: "no-actuator-web-exposure"
+      description: "Prevent exposing all actuator endpoints"
+      key: "management.endpoints.web.exposure.include"
+      forbiddenValues:
+        - "*"
+      severity: CRITICAL
+      message: "Wildcard actuator endpoint exposure is dangerous in production."
+      suggestion: "Explicitly list required endpoints: health,info,metrics"
+      caseInsensitive: false
+    
+    - id: "no-health-details-public"
+      description: "Prevent exposing detailed health information"
+      key: "management.endpoint.health.show-details"
+      forbiddenValues:
+        - "always"
+      severity: HIGH
+      message: "Health details should not be publicly exposed."
+      suggestion: "Set management.endpoint.health.show-details=when-authorized"
+      caseInsensitive: true
+    
+    # -------------------------------------------------------------------------
+    # ERROR HANDLING
+    # -------------------------------------------------------------------------
+    - id: "no-error-stacktrace"
+      description: "Prevent stacktrace exposure in error responses"
+      key: "server.error.include-stacktrace"
+      forbiddenValues:
+        - "always"
+        - "on-param"
+      severity: HIGH
+      message: "Stacktraces expose internal application details."
+      suggestion: "Set server.error.include-stacktrace=never"
+      caseInsensitive: true
