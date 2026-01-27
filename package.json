@@ -1,6 +1,6 @@
 {
   "name": "prod-analyzer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fail-fast CI guard for dangerous production misconfigurations across Spring Boot, Node.js, and .NET",
   "main": "dist/cli/main.js",
   "bin": {
