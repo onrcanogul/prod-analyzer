@@ -15,10 +15,10 @@ stages:
   - security
 
 variables:
-  PROFILE: spring          # Change to: spring, node, dotnet, or all
-  ENVIRONMENT: prod        # Target environment name
-  FAIL_ON: HIGH           # Fail on: CRITICAL, HIGH, MEDIUM, or LOW
-  SCAN_TARGET: .          # Directory to scan
+  PROFILE: spring # Change to: spring, node, dotnet, or all
+  ENVIRONMENT: prod # Target environment name
+  FAIL_ON: HIGH # Fail on: CRITICAL, HIGH, MEDIUM, or LOW
+  SCAN_TARGET: . # Directory to scan
 
 # Cache node_modules for faster builds
 cache:
@@ -55,11 +55,11 @@ prod-analyzer:
     - echo "Running production configuration security scan..."
     - echo "Profile - $PROFILE, Environment - $ENVIRONMENT, Fail on - $FAIL_ON"
     - npx prod-analyzer scan --directory $SCAN_TARGET --profile $PROFILE --env $ENVIRONMENT --fail-on $FAIL_ON
-  
+
   # Optional: Generate JSON report as artifact
   after_script:
     - npx prod-analyzer scan --directory $SCAN_TARGET --profile $PROFILE --format json > prod-analyzer-results.json || true
-  
+
   artifacts:
     when: always
     paths:
@@ -68,11 +68,10 @@ prod-analyzer:
       # GitLab can display JSON reports in the MR widget
       junit: prod-analyzer-results.json
     expire_in: 30 days
-  
+
   # Allow pipeline to proceed even if scan fails (optional)
   # Remove this line to make security scan a hard gate
   # allow_failure: false
-
 # Optional: Run security scan only on specific branches
 # prod-analyzer:
 #   only:

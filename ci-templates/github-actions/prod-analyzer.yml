@@ -1,5 +1,5 @@
 # GitHub Actions CI Template for prod-analyzer
-# 
+#
 # This template runs production configuration security scanning as a CI gate.
 # Copy this file to .github/workflows/prod-analyzer.yml in your repository.
 #
@@ -13,41 +13,41 @@ name: Production Config Security Scan
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [main, master, develop]
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [main, master, develop]
 
 jobs:
   security-scan:
     name: Configuration Security Scan
     runs-on: ubuntu-latest
-    
+
     # Configure scan behavior via environment variables
     env:
-      PROFILE: spring          # Change to: spring, node, dotnet, or all
-      ENVIRONMENT: prod        # Target environment name
-      FAIL_ON: HIGH           # Fail on: CRITICAL, HIGH, MEDIUM, or LOW
-      SCAN_TARGET: .          # Directory to scan
-    
+      PROFILE: spring # Change to: spring, node, dotnet, or all
+      ENVIRONMENT: prod # Target environment name
+      FAIL_ON: HIGH # Fail on: CRITICAL, HIGH, MEDIUM, or LOW
+      SCAN_TARGET: . # Directory to scan
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build project
         run: npm run build
-      
+
       - name: Run tests
         run: npm test
-      
+
       - name: Run prod-analyzer security scan
         run: |
           npx prod-analyzer scan \
@@ -55,7 +55,7 @@ jobs:
             --profile ${{ env.PROFILE }} \
             --env ${{ env.ENVIRONMENT }} \
             --fail-on ${{ env.FAIL_ON }}
-      
+
       # Optional: Generate SARIF report for GitHub Security tab
       - name: Generate SARIF report
         if: always()
@@ -64,14 +64,14 @@ jobs:
             --directory ${{ env.SCAN_TARGET }} \
             --profile ${{ env.PROFILE }} \
             --format sarif > prod-analyzer-results.sarif
-      
+
       - name: Upload SARIF to GitHub Security
         if: always()
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: prod-analyzer-results.sarif
           category: prod-analyzer
-      
+
       # Optional: Upload JSON report as artifact
       - name: Generate JSON report
         if: always()
@@ -80,7 +80,7 @@ jobs:
             --directory ${{ env.SCAN_TARGET }} \
             --profile ${{ env.PROFILE }} \
             --format json > prod-analyzer-results.json
-      
+
       - name: Upload JSON report
         if: always()
         uses: actions/upload-artifact@v3
