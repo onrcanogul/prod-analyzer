@@ -1,0 +1,82 @@
+# GitLab CI Template for prod-analyzer
+#
+# This template runs production configuration security scanning as a CI gate.
+# Copy this file to .gitlab-ci.yml in your repository root.
+#
+# Configuration:
+# - PROFILE: Scan profile (spring, node, dotnet, or all)
+# - ENVIRONMENT: Target environment name (prod, staging, etc.)
+# - FAIL_ON: Minimum severity to block deployment (CRITICAL, HIGH, MEDIUM, LOW)
+# - SCAN_TARGET: Directory to scan (default: current directory)
+
+stages:
+  - build
+  - test
+  - security
+
+variables:
+  PROFILE: spring          # Change to: spring, node, dotnet, or all
+  ENVIRONMENT: prod        # Target environment name
+  FAIL_ON: HIGH           # Fail on: CRITICAL, HIGH, MEDIUM, or LOW
+  SCAN_TARGET: .          # Directory to scan
+
+# Cache node_modules for faster builds
+cache:
+  paths:
+    - node_modules/
+
+build:
+  stage: build
+  image: node:20-alpine
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+      - node_modules/
+    expire_in: 1 hour
+
+test:
+  stage: test
+  image: node:20-alpine
+  dependencies:
+    - build
+  script:
+    - npm test
+
+# Production configuration security scan
+prod-analyzer:
+  stage: security
+  image: node:20-alpine
+  dependencies:
+    - build
+  script:
+    - echo "Running production configuration security scan..."
+    - echo "Profile - $PROFILE, Environment - $ENVIRONMENT, Fail on - $FAIL_ON"
+    - npx prod-analyzer scan --directory $SCAN_TARGET --profile $PROFILE --env $ENVIRONMENT --fail-on $FAIL_ON
+  
+  # Optional: Generate JSON report as artifact
+  after_script:
+    - npx prod-analyzer scan --directory $SCAN_TARGET --profile $PROFILE --format json > prod-analyzer-results.json || true
+  
+  artifacts:
+    when: always
+    paths:
+      - prod-analyzer-results.json
+    reports:
+      # GitLab can display JSON reports in the MR widget
+      junit: prod-analyzer-results.json
+    expire_in: 30 days
+  
+  # Allow pipeline to proceed even if scan fails (optional)
+  # Remove this line to make security scan a hard gate
+  # allow_failure: false
+
+# Optional: Run security scan only on specific branches
+# prod-analyzer:
+#   only:
+#     - main
+#     - master
+#     - develop
+#     - /^release\/.*$/

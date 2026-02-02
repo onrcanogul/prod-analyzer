@@ -1,0 +1,152 @@
+// Jenkins Pipeline Template for prod-analyzer
+//
+// This template runs production configuration security scanning as a CI gate.
+// Copy this file to Jenkinsfile in your repository root.
+//
+// Configuration:
+// - PROFILE: Scan profile (spring, node, dotnet, or all)
+// - ENVIRONMENT: Target environment name (prod, staging, etc.)
+// - FAIL_ON: Minimum severity to block deployment (CRITICAL, HIGH, MEDIUM, LOW)
+// - SCAN_TARGET: Directory to scan (default: current directory)
+
+pipeline {
+    agent any
+    
+    // Configure scan behavior
+    environment {
+        PROFILE = 'spring'          // Change to: spring, node, dotnet, or all
+        ENVIRONMENT = 'prod'        // Target environment name
+        FAIL_ON = 'HIGH'           // Fail on: CRITICAL, HIGH, MEDIUM, or LOW
+        SCAN_TARGET = '.'          // Directory to scan
+        NODE_VERSION = '20'        // Node.js version to use
+    }
+    
+    tools {
+        nodejs "NodeJS-${NODE_VERSION}"  // Requires NodeJS plugin
+    }
+    
+    options {
+        // Keep build logs for 30 days
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+        // Timeout after 15 minutes
+        timeout(time: 15, unit: 'MINUTES')
+        // Disable concurrent builds
+        disableConcurrentBuilds()
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out code...'
+                checkout scm
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing dependencies...'
+                sh 'npm ci'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                echo 'Building project...'
+                sh 'npm run build'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                sh 'npm test'
+            }
+        }
+        
+        stage('Security Scan') {
+            steps {
+                echo 'Running production configuration security scan...'
+                echo "Profile: ${PROFILE}, Environment: ${ENVIRONMENT}, Fail on: ${FAIL_ON}"
+                
+                script {
+                    // Run prod-analyzer security scan
+                    // This will fail the build if violations are found
+                    sh """
+                        npx prod-analyzer scan \
+                            --directory ${SCAN_TARGET} \
+                            --profile ${PROFILE} \
+                            --env ${ENVIRONMENT} \
+                            --fail-on ${FAIL_ON}
+                    """
+                }
+            }
+        }
+        
+        stage('Generate Reports') {
+            when {
+                expression { return true }  // Always run
+            }
+            steps {
+                echo 'Generating security scan reports...'
+                
+                script {
+                    // Generate JSON report
+                    sh """
+                        npx prod-analyzer scan \
+                            --directory ${SCAN_TARGET} \
+                            --profile ${PROFILE} \
+                            --format json > prod-analyzer-results.json || true
+                    """
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Archive scan results
+            archiveArtifacts artifacts: 'prod-analyzer-results.json', 
+                            allowEmptyArchive: true,
+                            fingerprint: true
+            
+            // Clean workspace
+            cleanWs()
+        }
+        
+        success {
+            echo 'Pipeline completed successfully. No security violations found above threshold.'
+        }
+        
+        failure {
+            echo 'Pipeline failed. Check for security violations or build errors.'
+        }
+    }
+}
+
+// Alternative: Declarative Pipeline with parameters
+// Uncomment to allow configuring scan options when triggering manually
+/*
+pipeline {
+    agent any
+    
+    parameters {
+        choice(
+            name: 'PROFILE',
+            choices: ['spring', 'node', 'dotnet', 'all'],
+            description: 'Scan profile to use'
+        )
+        choice(
+            name: 'FAIL_ON',
+            choices: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'],
+            description: 'Minimum severity to fail build'
+        )
+        string(
+            name: 'SCAN_TARGET',
+            defaultValue: '.',
+            description: 'Directory to scan'
+        )
+    }
+    
+    // ... rest of pipeline stages
+}
+*/

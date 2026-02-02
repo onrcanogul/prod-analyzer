@@ -216,6 +216,229 @@ Add to `package.json`:
 
 ---
 
+## CI Templates
+
+**Production-ready CI/CD configuration templates for instant integration.**
+
+We provide copy-paste ready CI templates for all major platforms. These templates include:
+- Automatic Node.js setup
+- Dependency installation and caching
+- Build and test execution
+- Production configuration security scanning as a CI gate
+- Configurable scan profiles and fail thresholds
+- Artifact generation (JSON and SARIF reports)
+
+### Available Templates
+
+All templates are located in the `ci-templates/` directory:
+
+| Platform | Template Path | Copy To |
+|----------|---------------|---------|
+| **GitHub Actions** | `ci-templates/github-actions/prod-analyzer.yml` | `.github/workflows/prod-analyzer.yml` |
+| **GitLab CI** | `ci-templates/gitlab-ci/.gitlab-ci.yml` | `.gitlab-ci.yml` |
+| **Azure DevOps** | `ci-templates/azure-devops/azure-pipelines.yml` | `azure-pipelines.yml` |
+| **Jenkins** | `ci-templates/jenkins/Jenkinsfile` | `Jenkinsfile` |
+
+---
+
+### GitHub Actions Template
+
+**Location:** `ci-templates/github-actions/prod-analyzer.yml`
+
+**Quick Setup:**
+
+1. Copy the template to your repository:
+```bash
+mkdir -p .github/workflows
+cp ci-templates/github-actions/prod-analyzer.yml .github/workflows/
+```
+
+2. Configure scan behavior by editing environment variables:
+```yaml
+env:
+  PROFILE: spring          # Options: spring, node, dotnet, all
+  ENVIRONMENT: prod        # Your target environment name
+  FAIL_ON: HIGH           # Options: CRITICAL, HIGH, MEDIUM, LOW
+  SCAN_TARGET: .          # Directory to scan
+```
+
+3. Commit and push. The workflow runs automatically on push and pull requests.
+
+**Features:**
+- Runs on Node.js 20
+- Executes `npm ci`, `npm run build`, `npm test`
+- Scans configuration files with prod-analyzer
+- Fails pipeline if violations are found above threshold
+- Uploads SARIF report to GitHub Security tab
+- Saves JSON report as artifact
+
+---
+
+### GitLab CI Template
+
+**Location:** `ci-templates/gitlab-ci/.gitlab-ci.yml`
+
+**Quick Setup:**
+
+1. Copy the template to your repository root:
+```bash
+cp ci-templates/gitlab-ci/.gitlab-ci.yml .
+```
+
+2. Configure scan behavior in the variables section:
+```yaml
+variables:
+  PROFILE: spring          # Options: spring, node, dotnet, all
+  ENVIRONMENT: prod        # Your target environment name
+  FAIL_ON: HIGH           # Options: CRITICAL, HIGH, MEDIUM, LOW
+  SCAN_TARGET: .          # Directory to scan
+```
+
+3. Commit and push. The pipeline runs automatically.
+
+**Features:**
+- Multi-stage pipeline (build, test, security)
+- Node.js 20 Alpine image
+- Caches node_modules for faster builds
+- Generates JSON report as GitLab artifact
+- Security scan runs in dedicated stage
+
+---
+
+### Azure DevOps Template
+
+**Location:** `ci-templates/azure-devops/azure-pipelines.yml`
+
+**Quick Setup:**
+
+1. Copy the template to your repository root:
+```bash
+cp ci-templates/azure-devops/azure-pipelines.yml .
+```
+
+2. Configure scan behavior in the variables section:
+```yaml
+variables:
+  PROFILE: 'spring'        # Options: spring, node, dotnet, all
+  ENVIRONMENT: 'prod'      # Your target environment name
+  FAIL_ON: 'HIGH'         # Options: CRITICAL, HIGH, MEDIUM, LOW
+  SCAN_TARGET: '.'        # Directory to scan
+```
+
+3. Create a new pipeline in Azure DevOps pointing to this file.
+
+**Features:**
+- Multi-stage pipeline with build and security stages
+- Artifact publishing for build outputs
+- JSON report published as artifact
+- Runs on ubuntu-latest agent
+- Triggers on main, master, and develop branches
+
+---
+
+### Jenkins Template
+
+**Location:** `ci-templates/jenkins/Jenkinsfile`
+
+**Quick Setup:**
+
+1. Copy the template to your repository root:
+```bash
+cp ci-templates/jenkins/Jenkinsfile .
+```
+
+2. Configure scan behavior in the environment section:
+```groovy
+environment {
+    PROFILE = 'spring'          // Options: spring, node, dotnet, all
+    ENVIRONMENT = 'prod'        // Your target environment name
+    FAIL_ON = 'HIGH'           // Options: CRITICAL, HIGH, MEDIUM, LOW
+    SCAN_TARGET = '.'          // Directory to scan
+    NODE_VERSION = '20'        // Node.js version to use
+}
+```
+
+3. Create a new Pipeline job in Jenkins and configure it to use this Jenkinsfile.
+
+**Prerequisites:**
+- NodeJS plugin installed in Jenkins
+- Node.js 20 configured in Jenkins Global Tool Configuration
+
+**Features:**
+- Declarative pipeline with clear stages
+- Automatic artifact archiving
+- Workspace cleanup after build
+- 15-minute timeout protection
+- Post-build status reporting
+
+---
+
+### Configuration Options
+
+All templates support these configuration variables:
+
+| Variable | Description | Valid Values | Default |
+|----------|-------------|--------------|---------|
+| `PROFILE` | Platform-specific rules to run | `spring`, `node`, `dotnet`, `all` | `spring` |
+| `ENVIRONMENT` | Target environment name (for reports) | Any string | `prod` |
+| `FAIL_ON` | Minimum severity to fail the build | `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `NONE` | `HIGH` |
+| `SCAN_TARGET` | Directory to scan | Any valid path | `.` (current directory) |
+
+---
+
+### How It Works
+
+1. **Install & Build**: Templates install Node.js, run `npm ci`, `npm run build`, and `npm test`
+2. **Security Scan**: Executes `npx prod-analyzer scan` with your configuration
+3. **Fail-Fast**: Pipeline fails if violations are found at or above the `FAIL_ON` threshold
+4. **Report Generation**: Creates JSON and/or SARIF reports for artifact storage
+5. **GitHub Security Integration**: SARIF reports automatically appear in GitHub Security tab (GitHub Actions only)
+
+---
+
+### Customization Examples
+
+**Scan only production configs in a monorepo:**
+```yaml
+SCAN_TARGET: backend/src/main/resources
+PROFILE: spring
+```
+
+**Multi-platform project:**
+```yaml
+PROFILE: all
+SCAN_TARGET: .
+```
+
+**Strict security gate (only CRITICAL blocks):**
+```yaml
+FAIL_ON: CRITICAL
+```
+
+**Audit mode (never fail, just report):**
+```yaml
+FAIL_ON: NONE
+```
+
+---
+
+### Troubleshooting
+
+**Issue:** "prod-analyzer: command not found"  
+**Solution:** Templates use `npx prod-analyzer` which doesn't require global install. If you prefer local build, use:
+```bash
+npm run build
+node dist/cli/main.js scan -d . --profile spring --fail-on HIGH
+```
+
+**Issue:** Pipeline fails but no violations shown  
+**Solution:** Check exit code. Code 2 = invalid arguments, Code 3 = unexpected error. Review pipeline logs.
+
+**Issue:** Want to customize scan further  
+**Solution:** See full CLI reference below or run `npx prod-analyzer scan --help`
+
+---
+
 ## CI/CD Integration (Copy-Paste Ready)
 
 ### GitHub Actions
