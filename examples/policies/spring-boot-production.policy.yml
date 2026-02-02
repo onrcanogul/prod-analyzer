@@ -1,7 +1,7 @@
 # =============================================================================
 # PRODUCTION POLICY - SPRING BOOT
 # =============================================================================
-# 
+#
 # This policy enforces production-ready configurations for Spring Boot apps.
 # Place this file as `.prod-analyzer-policy.yml` in your project root.
 #
@@ -16,12 +16,12 @@ policies:
   name: "Spring Boot Production Policy"
   version: "1.0.0"
   description: "Enforces production-ready Spring Boot configurations"
-  
+
   metadata:
     owner: "Platform Team"
     contact: "platform@company.com"
     lastUpdated: "2025-01-15"
-  
+
   rules:
     # -------------------------------------------------------------------------
     # DATABASE SAFETY
@@ -37,7 +37,7 @@ policies:
       message: "Automatic DDL schema operations are forbidden in production. Use 'validate' or 'none'."
       suggestion: "Set spring.jpa.hibernate.ddl-auto=validate or spring.jpa.hibernate.ddl-auto=none"
       caseInsensitive: true
-    
+
     # -------------------------------------------------------------------------
     # LOGGING SECURITY
     # -------------------------------------------------------------------------
@@ -51,7 +51,7 @@ policies:
       message: "DEBUG/TRACE logging at root level exposes sensitive data in production."
       suggestion: "Set logging.level.root=INFO or logging.level.root=WARN"
       caseInsensitive: true
-    
+
     - id: "no-debug-logging-wildcard"
       description: "Prevent DEBUG logging for all packages"
       key: "logging.level.*"
@@ -62,7 +62,7 @@ policies:
       message: "DEBUG/TRACE logging exposes sensitive data in production."
       suggestion: "Use INFO, WARN, or ERROR level"
       caseInsensitive: true
-    
+
     # -------------------------------------------------------------------------
     # SPRING PROFILES
     # -------------------------------------------------------------------------
@@ -78,7 +78,7 @@ policies:
       message: "Development/test Spring profiles detected. Must use 'prod' or 'production'."
       suggestion: "Set spring.profiles.active=prod"
       caseInsensitive: true
-    
+
     - id: "require-prod-profile"
       description: "Enforce production profile"
       key: "spring.profiles.active"
@@ -87,7 +87,7 @@ policies:
       message: "Production profile must be explicitly set."
       suggestion: "Set spring.profiles.active=prod"
       caseInsensitive: true
-    
+
     # -------------------------------------------------------------------------
     # ACTUATOR SECURITY
     # -------------------------------------------------------------------------
@@ -100,7 +100,7 @@ policies:
       message: "Wildcard actuator endpoint exposure is dangerous in production."
       suggestion: "Explicitly list required endpoints: health,info,metrics"
       caseInsensitive: false
-    
+
     - id: "no-health-details-public"
       description: "Prevent exposing detailed health information"
       key: "management.endpoint.health.show-details"
@@ -110,7 +110,7 @@ policies:
       message: "Health details should not be publicly exposed."
       suggestion: "Set management.endpoint.health.show-details=when-authorized"
       caseInsensitive: true
-    
+
     # -------------------------------------------------------------------------
     # ERROR HANDLING
     # -------------------------------------------------------------------------

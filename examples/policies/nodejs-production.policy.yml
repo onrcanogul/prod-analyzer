@@ -1,7 +1,7 @@
 # =============================================================================
 # PRODUCTION POLICY - NODE.JS
 # =============================================================================
-# 
+#
 # This policy enforces production-ready configurations for Node.js apps.
 # Place this file as `.prod-analyzer-policy.yml` in your project root.
 #
@@ -17,12 +17,12 @@ policies:
   name: "Node.js Production Policy"
   version: "1.0.0"
   description: "Enforces production-ready Node.js configurations"
-  
+
   metadata:
     owner: "Platform Team"
     contact: "platform@company.com"
     lastUpdated: "2025-01-15"
-  
+
   rules:
     # -------------------------------------------------------------------------
     # ENVIRONMENT
@@ -35,7 +35,7 @@ policies:
       message: "NODE_ENV must be set to 'production' in production environments."
       suggestion: "Set NODE_ENV=production"
       caseInsensitive: false
-    
+
     - id: "no-development-env"
       description: "Prevent development environment"
       key: "NODE_ENV"
@@ -48,7 +48,7 @@ policies:
       message: "Development/test NODE_ENV detected in production configuration."
       suggestion: "Set NODE_ENV=production"
       caseInsensitive: false
-    
+
     # -------------------------------------------------------------------------
     # DEBUG & LOGGING
     # -------------------------------------------------------------------------
@@ -61,7 +61,7 @@ policies:
       message: "DEBUG=* enables verbose logging for all modules, exposing sensitive data."
       suggestion: "Disable debug logging or specify only necessary modules"
       caseInsensitive: false
-    
+
     - id: "no-verbose-logging"
       description: "Prevent verbose logging"
       key: "LOG_LEVEL"
@@ -74,7 +74,7 @@ policies:
       message: "Verbose logging levels expose sensitive data in production."
       suggestion: "Set LOG_LEVEL=info or LOG_LEVEL=warn"
       caseInsensitive: true
-    
+
     # -------------------------------------------------------------------------
     # SECURITY - SECRETS
     # -------------------------------------------------------------------------
@@ -86,7 +86,7 @@ policies:
       message: "JWT_SECRET is too weak or uses common words."
       suggestion: "Use a strong random string (minimum 32 characters)"
       caseInsensitive: true
-    
+
     - id: "no-default-session-secret"
       description: "Prevent default session secrets"
       key: "SESSION_SECRET"
@@ -100,7 +100,7 @@ policies:
       message: "SESSION_SECRET uses a weak or default value."
       suggestion: "Use a strong random string (minimum 32 characters)"
       caseInsensitive: true
-    
+
     - id: "no-weak-encryption-key"
       description: "Prevent weak encryption keys"
       key: "ENCRYPTION_KEY"
@@ -109,7 +109,7 @@ policies:
       message: "ENCRYPTION_KEY is too short (minimum 32 characters required)."
       suggestion: "Use a strong random string (minimum 32 characters)"
       caseInsensitive: false
-    
+
     # -------------------------------------------------------------------------
     # SECURITY - CORS
     # -------------------------------------------------------------------------
@@ -122,7 +122,7 @@ policies:
       message: "CORS wildcard origin allows requests from any domain."
       suggestion: "Specify allowed origins explicitly (e.g., https://app.company.com)"
       caseInsensitive: false
-    
+
     # -------------------------------------------------------------------------
     # SECURITY - TLS/SSL
     # -------------------------------------------------------------------------
@@ -136,7 +136,7 @@ policies:
       message: "TLS certificate validation is disabled, allowing man-in-the-middle attacks."
       suggestion: "Remove NODE_TLS_REJECT_UNAUTHORIZED or set to 1"
       caseInsensitive: false
-    
+
     # -------------------------------------------------------------------------
     # DATABASE
     # -------------------------------------------------------------------------
@@ -154,7 +154,7 @@ policies:
       message: "Database password is weak or missing."
       suggestion: "Use a strong random password"
       caseInsensitive: true
-    
+
     - id: "require-db-ssl"
       description: "Enforce database SSL connection"
       key: "DB_SSL"

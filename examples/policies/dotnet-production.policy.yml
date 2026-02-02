@@ -1,7 +1,7 @@
 # =============================================================================
 # PRODUCTION POLICY - .NET / ASP.NET CORE
 # =============================================================================
-# 
+#
 # This policy enforces production-ready configurations for .NET apps.
 # Place this file as `.prod-analyzer-policy.yml` in your project root.
 #
@@ -16,12 +16,12 @@ policies:
   name: ".NET Production Policy"
   version: "1.0.0"
   description: "Enforces production-ready .NET/ASP.NET Core configurations"
-  
+
   metadata:
     owner: "Platform Team"
     contact: "platform@company.com"
     lastUpdated: "2025-01-15"
-  
+
   rules:
     # -------------------------------------------------------------------------
     # ENVIRONMENT
@@ -34,7 +34,7 @@ policies:
       message: "ASPNETCORE_ENVIRONMENT must be set to 'Production'."
       suggestion: "Set ASPNETCORE_ENVIRONMENT=Production"
       caseInsensitive: false
-    
+
     - id: "no-development-environment"
       description: "Prevent Development environment"
       key: "ASPNETCORE_ENVIRONMENT"
@@ -47,7 +47,7 @@ policies:
       message: "Non-production ASPNETCORE_ENVIRONMENT detected."
       suggestion: "Set ASPNETCORE_ENVIRONMENT=Production"
       caseInsensitive: false
-    
+
     # -------------------------------------------------------------------------
     # ERROR HANDLING
     # -------------------------------------------------------------------------
@@ -61,7 +61,7 @@ policies:
       message: "Detailed errors expose sensitive application information."
       suggestion: "Set DetailedErrors=false or remove this setting"
       caseInsensitive: false
-    
+
     # -------------------------------------------------------------------------
     # HTTPS
     # -------------------------------------------------------------------------
@@ -73,7 +73,7 @@ policies:
       message: "HTTP URLs detected. Production must use HTTPS only."
       suggestion: "Use https:// URLs only (e.g., https://+:443)"
       caseInsensitive: false
-    
+
     # -------------------------------------------------------------------------
     # LOGGING
     # -------------------------------------------------------------------------
@@ -87,7 +87,7 @@ policies:
       message: "Debug/Trace logging exposes sensitive data in production."
       suggestion: "Set Logging:LogLevel:Default=Information or Warning"
       caseInsensitive: false
-    
+
     - id: "no-debug-logging-microsoft"
       description: "Prevent Debug/Trace logging for Microsoft namespace"
       key: "Logging:LogLevel:Microsoft"
@@ -98,7 +98,7 @@ policies:
       message: "Debug/Trace logging for Microsoft namespace is too verbose."
       suggestion: "Set Logging:LogLevel:Microsoft=Warning"
       caseInsensitive: false
-    
+
     # -------------------------------------------------------------------------
     # CONNECTION STRINGS
     # -------------------------------------------------------------------------
@@ -110,7 +110,7 @@ policies:
       message: "SQL Server connection uses explicit credentials instead of integrated security."
       suggestion: "Use Integrated Security=true where possible"
       caseInsensitive: true
-    
+
     # -------------------------------------------------------------------------
     # SECURITY HEADERS
     # -------------------------------------------------------------------------
